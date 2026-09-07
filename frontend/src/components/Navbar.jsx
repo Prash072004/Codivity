@@ -1,11 +1,11 @@
 import { Link } from "react-router";
 import { NavLink } from "./NavLink";
 
-export function Navbar() {
+export function Navbar({showAuth = true}) {
     return <div style={{display: "flex", alignItems: "center", backgroundColor: "black", color: "white", border: "1px solid white", borderRadius: "8px", padding: "10px 12px"}}>
         {/* Logo */}
         <div>
-            <Link to="/" style={{textDecoration: "none", color: "white", fontSize: "20px", fontWeight: "600",}}>Codivity</Link>
+            <Link to="/" style={{textDecoration: "none", color: "white", fontSize: "20px", fontWeight: "600"}}>Codivity</Link>
         </div>
 
         {/* Navigation Links */}
@@ -18,9 +18,11 @@ export function Navbar() {
         </div>
 
         {/* Authentication */}
-        <div style={{display: "flex", gap: "10px", marginLeft: "auto"}}>
-            <NavLink to="/login">Login</NavLink>
-            <NavLink to="/signup">Sign Up</NavLink>
-        </div>
+        {showAuth && (
+            <div style={{display: "flex", gap: "10px", marginLeft: "auto"}}>
+                <NavLink to="/signin">Login</NavLink>
+                <NavLink to="/signup">Sign Up</NavLink>
+            </div>
+        )}
     </div>
 }
