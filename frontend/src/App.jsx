@@ -1,15 +1,29 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import { Home } from "./pages/Home";
+import { ProblemSet } from "./pages/ProblemSet";
+import { CustomContest } from "./pages/CustomContest";
+import { Leaderboard } from "./pages/Leaderboard";
+import { Discuss } from "./pages/Discuss";
+import { About } from "./pages/About";
+import { Signin } from "./pages/Signin";
+import { Signup } from "./pages/Signup";
+import { CreateSheet } from "./pages/CreateSheet";
 
 function App() {
   return (
-    <div>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/problem-set" element={<ProblemSet />} />
+        <Route path="/custom-contest" element={<CustomContest />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/discuss" element={<Discuss />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/signin" element={<Signin />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="create-sheet" element={<CreateSheet/>} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
