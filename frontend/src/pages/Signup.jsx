@@ -5,7 +5,7 @@ export function Signup() {
         {/* Navbar */}
         <Navbar showAuth={false} />
 
-        {/* Signup Form */}
+        {/* Sign Up Form */}
         <div style={{display: "flex", justifyContent: "center", marginTop: "28px"}}>
             <div style={{width: "380px", minHeight: "530px", border: "1px solid white", borderRadius: "35px", padding: "30px", boxSizing: "border-box",}}>
                 {/* Logo */}
@@ -52,9 +52,9 @@ export function Signup() {
                 {/* Sign In option */}
                 <div style={{textAlign: "center", marginTop: "35px", fontSize: "16px"}}>
                     Have an account?{" "}
-                    <a href="/signin" style={{ color: "white" }}>
+                    <Link to="/signin" style={{color: "white"}}>
                         Login
-                    </a>
+                    </Link>
                 </div>
             </div>
         </div>
