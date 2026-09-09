@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const connectDB = require("./db");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
@@ -12,6 +13,9 @@ app.use(express.json());
 app.get("/", (req, res) => {
     res.json({ message: "Codivity API is running" });
 });
+
+
+app.use("/api/v1/auth", authRoutes);
 
 const PORT = process.env.PORT || 5000;
 
