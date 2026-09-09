@@ -1,4 +1,5 @@
 import { Navbar } from "../components/Navbar";
+import { Link } from "react-router";
 
 export function Signup() {
     return <div style={{minHeight: "100vh", backgroundColor: "black", color: "white", padding: "12px", boxSizing: "border-box"}}>
