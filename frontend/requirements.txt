@@ -1,1 +1,3 @@
 axios
+lucide-react
+Explore: https://lucide.dev/icons/

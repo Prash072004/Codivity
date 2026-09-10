@@ -44,6 +44,10 @@ export function Signin() {
             // Store JWT
             localStorage.setItem("token", response.data.token);
 
+            const profileResponse = await api.get("/profile");
+
+            console.log(profileResponse.data);
+
             navigate("/");
 
         } catch (err) {
