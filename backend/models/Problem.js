@@ -37,6 +37,12 @@ const problemSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    topics: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Topic"
+        }
+    ]
 }, {
     timestamps: true
 });
