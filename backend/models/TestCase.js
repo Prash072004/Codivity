@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const testCaseSchema = new mongoose.Schema(
     {
-        problem: {
+        problemId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Problem",
             required: true
