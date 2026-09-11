@@ -7,6 +7,11 @@ const authRoutes = require("./routes/authRoutes");
 const authMiddleware = require("./middleware/authMiddleware");
 const profileRoutes = require("./routes/profileRoutes");
 const problemRoutes = require("./routes/problemRoutes");
+const topicRoutes = require("./routes/topicRoutes");
+const testCaseRoutes = require("./routes/testCaseRoutes");
+const languageRoutes = require("./routes/languageRoutes");
+const submissionRoutes = require("./routes/submissionRoutes");
+const userProblemRoutes = require("./routes/userProblemRoutes");
 
 const app = express();
 
@@ -21,6 +26,11 @@ app.get("/", (req, res) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/problems", problemRoutes);
+app.use("/api/v1/topics", topicRoutes);
+app.use("/api/v1/test-cases", testCaseRoutes);
+app.use("/api/v1/languages", languageRoutes);
+app.use("/api/v1/submissions", submissionRoutes);
+app.use("/api/v1/user-problems", userProblemRoutes);
 
 const PORT = process.env.PORT || 5000;
 

@@ -55,6 +55,11 @@ const problemSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    primaryTopic: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Topic",
+        required: true
+    },
     topics: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Topic"
