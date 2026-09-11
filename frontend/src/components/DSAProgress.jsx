@@ -38,53 +38,41 @@ export function DSAProgress() {
                 border: "1px solid white",
                 padding: "12px",
                 boxSizing: "border-box",
-                flex: 1,
-                minWidth: 0
+                width: "260px"
             }}
         >
+            {/* Header */}
             <div
                 style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    fontSize: "14px",
+                    fontWeight: "600",
                     marginBottom: "12px"
                 }}
             >
-                <div
-                    style={{
-                        fontSize: "12px",
-                        fontWeight: "600"
-                    }}
-                >
-                    DSA Progress
-                </div>
-
-                <span
-                    style={{
-                        fontSize: "9px"
-                    }}
-                >
-                    View Sheet →
-                </span>
+                DSA Progress
             </div>
 
+            {/* Topics */}
             {topics.map((topic) => {
-                const percentage =
-                    (topic.solved / topic.total) * 100;
+                const progress = Math.round(
+                    (topic.solved / topic.total) * 100
+                );
 
                 return (
                     <div
                         key={topic.name}
                         style={{
-                            marginBottom: "10px"
+                            marginBottom: "11px"
                         }}
                     >
+                        {/* Topic Info */}
                         <div
                             style={{
                                 display: "flex",
                                 justifyContent: "space-between",
-                                fontSize: "9px",
-                                marginBottom: "3px"
+                                alignItems: "center",
+                                fontSize: "11px",
+                                marginBottom: "4px"
                             }}
                         >
                             <span>{topic.name}</span>
@@ -94,17 +82,18 @@ export function DSAProgress() {
                             </span>
                         </div>
 
+                        {/* Progress Bar */}
                         <div
                             style={{
                                 width: "100%",
-                                height: "5px",
+                                height: "6px",
                                 border: "1px solid white",
                                 boxSizing: "border-box"
                             }}
                         >
                             <div
                                 style={{
-                                    width: `${percentage}%`,
+                                    width: `${progress}%`,
                                     height: "100%",
                                     backgroundColor: "white"
                                 }}
@@ -113,6 +102,26 @@ export function DSAProgress() {
                     </div>
                 );
             })}
+
+            {/* View Sheet */}
+            <button
+                style={{
+                    width: "100%",
+                    marginTop: "2px",
+                    padding: "6px",
+
+                    backgroundColor: "black",
+                    color: "white",
+
+                    border: "1px solid white",
+                    borderRadius: "4px",
+
+                    fontSize: "11px",
+                    cursor: "pointer"
+                }}
+            >
+                View DSA Sheets →
+            </button>
         </div>
     );
 }

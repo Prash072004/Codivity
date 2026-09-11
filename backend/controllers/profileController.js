@@ -13,11 +13,12 @@ async function getProfile (req, res) {
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                createdAt: user.createdAt
             }
         });
     } catch (err) {
-        console.error("Profile error:", error);
+        console.error("Profile error:", err);
 
         return res.status(500).json({
             message: "Internal server error"

@@ -1,73 +1,41 @@
-export function ProfileHeader() {
+export function ProfileHeader({ user }) {
+    const username = user?.username || "User";
+    const createdAt = user?.createdAt;
+    const joinedDate = createdAt ? new Date(createdAt).toLocaleDateString("en-US", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    }) : "";
+
     return (
-        <div
-            style={{
-                border: "1px solid white",
-                padding: "10px",
-                display: "flex",
-                alignItems: "center",
-                boxSizing: "border-box",
-                minHeight: "68px"
-            }}
-        >
+        <div style={{ border: "1px solid white", padding: "10px", display: "flex", alignItems: "center", boxSizing: "border-box", minHeight: "68px" }}>
+            
             {/* Avatar */}
-            <div
-                style={{
-                    width: "50px",
-                    height: "50px",
-                    border: "1px solid white",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "20px",
-                    flexShrink: 0
-                }}
-            >
-                P
+            <div style={{ width: "50px", height: "50px", border: "1px solid white", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0}}>
+                {username.charAt(0).toUpperCase()}
             </div>
 
             {/* User Information */}
-            <div
-                style={{
-                    marginLeft: "10px",
-                    lineHeight: "1.2"
-                }}
-            >
-                <div
-                    style={{
-                        fontSize: "14px",
-                        fontWeight: "600"
-                    }}
-                >
-                    Prashant
+            <div style={{ marginLeft: "10px", lineHeight: "1.2" }}>
+                
+                <div style={{ fontSize: "14px", fontWeight: "600" }}>
+                    {username}
                 </div>
 
-                <div
-                    style={{
-                        fontSize: "12px"
-                    }}
-                >
-                    @prashant001
+                {/* Handle */}
+                <div style={{ fontSize: "12px" }}>
+                    @{username}
                 </div>
 
-                <div
-                    style={{
-                        fontSize: "11px"
-                    }}
-                >
-                    Joined Aug 2026
+                {/* Joined Date */}
+                <div style={{ fontSize: "11px"}}>
+                    Joined {joinedDate}
                 </div>
 
-                <div
-                    style={{
-                        fontSize: "11px",
-                        fontStyle: "italic",
-                        marginTop: "2px"
-                    }}
-                >
+                <div style={{ fontSize: "11px", fontStyle: "italic", marginTop: "2px" }}>
                     "Consistent practice leads to progress."
                 </div>
+
             </div>
 
             {/* Edit Profile */}

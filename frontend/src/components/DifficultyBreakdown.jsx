@@ -35,51 +35,72 @@ export function DifficultyBreakdown() {
         <div
             style={{
                 border: "1px solid white",
-                padding: "10px",
+                padding: "12px",
                 boxSizing: "border-box",
-                width: "260px",
-                minHeight: "68px"
+                width: "260px"
             }}
         >
-            {/* Title */}
+            {/* Header */}
             <div
                 style={{
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    marginBottom: "8px"
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "12px"
                 }}
             >
-                Difficulty Breakdown
+                <span
+                    style={{
+                        fontSize: "14px",
+                        fontWeight: "600"
+                    }}
+                >
+                    Difficulty
+                </span>
+
+                <span
+                    style={{
+                        fontSize: "11px"
+                    }}
+                >
+                    {totalSolved} / {totalProblems}
+                </span>
             </div>
 
             {/* Difficulty Rows */}
             {difficulty.map((item) => {
-                const progress =
-                    (item.solved / item.total) * 100;
+                const progress = Math.round(
+                    (item.solved / item.total) * 100
+                );
 
                 return (
                     <div
                         key={item.name}
                         style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            marginBottom: "6px",
-                            fontSize: "10px"
+                            marginBottom: "10px"
                         }}
                     >
-                        <span
-                            style={{
-                                width: "45px"
-                            }}
-                        >
-                            {item.name}
-                        </span>
-
+                        {/* Label */}
                         <div
                             style={{
-                                flex: 1,
-                                height: "5px",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                fontSize: "11px",
+                                marginBottom: "4px"
+                            }}
+                        >
+                            <span>{item.name}</span>
+
+                            <span>
+                                {item.solved}/{item.total}
+                            </span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div
+                            style={{
+                                width: "100%",
+                                height: "6px",
                                 border: "1px solid white",
                                 boxSizing: "border-box"
                             }}
@@ -92,10 +113,6 @@ export function DifficultyBreakdown() {
                                 }}
                             />
                         </div>
-
-                        <span>
-                            {item.solved}/{item.total}
-                        </span>
                     </div>
                 );
             })}
@@ -103,12 +120,30 @@ export function DifficultyBreakdown() {
             {/* Overall */}
             <div
                 style={{
-                    textAlign: "right",
-                    marginTop: "6px",
-                    fontSize: "11px"
+                    borderTop: "1px solid white",
+                    paddingTop: "10px",
+                    marginTop: "4px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center"
                 }}
             >
-                Overall: {percentage}%
+                <span
+                    style={{
+                        fontSize: "11px"
+                    }}
+                >
+                    Overall Progress
+                </span>
+
+                <span
+                    style={{
+                        fontSize: "14px",
+                        fontWeight: "600"
+                    }}
+                >
+                    {percentage}%
+                </span>
             </div>
         </div>
     );

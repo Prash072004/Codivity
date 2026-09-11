@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { NavLink } from "react-router";
 import { User, FileCheckCorner, Trophy, Sheet, Settings } from "lucide-react";
 
 export function ProfileSidebar() {
@@ -31,43 +31,49 @@ export function ProfileSidebar() {
     ];
 
     return (
-        <div
-            style={{
-                width: "160px",
-                border: "1px solid white",
-                padding: "10px 0",
-                boxSizing: "border-box",
-                flexShrink: 0
-            }}
-        >
-            {items.map((item) => (
-                <Link
+        <div style={{ width: "160px", border: "1px solid white", padding: "10px 0", boxSizing: "border-box", flexShrink: 0 }}>
+            
+            {items.map((item, index) => (
+                               <NavLink
                     key={item.label}
                     to={item.path}
-                    style={{
+                    style={({ isActive }) => ({
                         display: "flex",
                         alignItems: "center",
                         gap: "10px",
-                        padding: "9px 10px",
-                        color: "white",
+
+                        padding: "10px",
+
+                        color: isActive ? "black" : "white",
+                        backgroundColor: isActive ? "white" : "black",
+
                         textDecoration: "none",
-                        borderBottom: "1px solid white",
-                        fontSize: "14px",
+
+                        borderBottom:
+                            index !== items.length - 1
+                                ? "1px solid white"
+                                : "none",
+
+                        fontSize: "13px",
+
                         boxSizing: "border-box"
-                    }}
+                    })}
                 >
                     <span
                         style={{
                             width: "18px",
                             textAlign: "center",
-                            fontSize: "17px"
+                            fontSize: "16px",
+                            flexShrink: 0
                         }}
                     >
                         {item.icon}
                     </span>
 
-                    <span>{item.label}</span>
-                </Link>
+                    <span>
+                        {item.label}
+                    </span>
+                </NavLink>
             ))}
         </div>
     );
