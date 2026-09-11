@@ -6,6 +6,7 @@ const connectDB = require("./db");
 const authRoutes = require("./routes/authRoutes");
 const authMiddleware = require("./middleware/authMiddleware");
 const profileRoutes = require("./routes/profileRoutes");
+const problemRoutes = require("./routes/problemRoutes");
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/profile", profileRoutes);
+app.use("/api/v1/problems", problemRoutes);
 
 const PORT = process.env.PORT || 5000;
 

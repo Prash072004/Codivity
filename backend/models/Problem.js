@@ -9,7 +9,7 @@ const problemSchema = new mongoose.Schema({
     slug: {
         type: String,
         required: true,
-        unqiue: true,
+        unique: true,
         lowercase: true,
         trim: true
     },
@@ -32,17 +32,33 @@ const problemSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    examples: [{
+        title: {
+            type: String,
+            required: true
+        },
+        input: {
+            type: String,
+            required: true
+        },
+        output: {
+            type: String,
+            required: true
+        },
+        explanation: {
+            type: String,
+            default: ""
+        }
+    }],
     constraints: {
         type: String,
         required: true,
         trim: true
     },
-    topics: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Topic"
-        }
-    ]
+    topics: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Topic"
+    }]
 }, {
     timestamps: true
 });
