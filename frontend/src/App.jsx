@@ -17,7 +17,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/problem-set" element={<ProblemSet />} />
-        <Route path="/problem-set/:slug" element={<ProblemSet />} />
+        <Route path="/problem-set/:slug" element={<Problem />} />
         <Route path="/custom-contest" element={<CustomContest />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/discuss" element={<Discuss />} />

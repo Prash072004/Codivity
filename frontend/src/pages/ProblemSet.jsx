@@ -65,7 +65,7 @@ export function ProblemSet() {
                     {problems.map((item) => (
                         <article key={item._id} style={{ marginTop: "20px" }}>
                             <h2>
-                                <Link style={{ color: "white" }} to={`/problem-set/${item.slug}`}>
+                                <Link style={{ color: "white" }} to={`/problem/${item.slug}`}>
                                     {item.title}
                                 </Link>
                             </h2>

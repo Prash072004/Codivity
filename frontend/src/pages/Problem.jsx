@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import api from "../services/api";
 import { Navbar } from "../components/Navbar";
+import { ProblemStatement } from "../components/ProblemStatement";
+import { CodeEditor } from "../components/CodeEditor";
 
 export function Problem() {
     const { slug } = useParams();
@@ -9,6 +11,7 @@ export function Problem() {
     const [problem, setProblem] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [submissionResult, setSubmissionResult] = useState(null);
 
     useEffect(() => {
         const fetchProblem = async () => {
@@ -16,6 +19,7 @@ export function Problem() {
                 const response = await api.get(`/problems/${slug}`);
 
                 setProblem(response.data.problem);
+                console.log(response.data.problem);
             } catch (err) {
                 setError(
                     err.response?.data?.message ||
@@ -51,98 +55,55 @@ export function Problem() {
         );
     }
 
-    return (
-        <div style={{ color: "white" }}>
-            <Navbar />
+    return <div style={{color: "white"}}>
+        
+        <Navbar />
+        
+        <main style={{ display: "flex", gap: "10px", height: "calc(100vh - 100px)", padding: "10px", boxSizing: "border-box" }}>
+    
+            {/* Problem Statement */}
+            <div style={{ flex: 1, minWidth: 0, border: "1px solid white", borderRadius: "6px", overflow: "hidden" }}>
+                <ProblemStatement problem={problem} />
+            </div>
 
-            <main
-                style={{
-                    maxWidth: "1000px",
-                    margin: "30px auto",
-                    padding: "0 20px"
-                }}
-            >
-                <h1>{problem.title}</h1>
-
-                <div
-                    style={{
-                        display: "flex",
-                        gap: "10px",
-                        marginBottom: "25px"
-                    }}
-                >
-                    <span>{problem.difficulty}</span>
-
-                    {problem.topics?.map((topic) => (
-                        <span key={topic._id}>
-                            {topic.name}
-                        </span>
-                    ))}
+            {/* Right Side */}
+            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
+                
+                {/* Code Editor */}
+                <div style={{ flex: 1, minHeight: 0 }}>
+                    <CodeEditor
+                        problemId={problem._id}
+                        examples={problem.examples}
+                        onResult={setSubmissionResult}
+                    />
                 </div>
 
-                <section>
-                    <p>{problem.description}</p>
-                </section>
+                {/* Output */}
+                <div style={{ flex: 0.5, minHeight: 0, border: "1px solid white", borderRadius: "6px", padding: "15px", boxSizing: "border-box", color: "white", overflowY: "auto"}}>
+                    <h3 style={{ marginTop: 0 }}>
+                        Output
+                    </h3>
 
-                <section style={{ marginTop: "30px" }}>
-                    <h2>Input Format</h2>
-                    <p>{problem.inputFormat}</p>
-                </section>
+                    {submissionResult ? (
+                        <div>
+                            <strong>
+                                {submissionResult.status}
+                            </strong>
 
-                <section style={{ marginTop: "30px" }}>
-                    <h2>Output Format</h2>
-                    <p>{problem.outputFormat}</p>
-                </section>
-
-                <section style={{ marginTop: "30px" }}>
-                    <h2>Examples</h2>
-
-                    {problem.examples?.map((example, index) => (
-                        <div
-                            key={index}
-                            style={{
-                                border: "1px solid white",
-                                borderRadius: "8px",
-                                padding: "15px",
-                                marginTop: "15px"
-                            }}
-                        >
-                            <h3>{example.title}</h3>
-
-                            <p>
-                                <strong>Input:</strong>
-                            </p>
-
-                            <pre>{example.input}</pre>
-
-                            <p>
-                                <strong>Output:</strong>
-                            </p>
-
-                            <pre>{example.output}</pre>
-
-                            {example.explanation && (
-                                <>
-                                    <p>
-                                        <strong>
-                                            Explanation:
-                                        </strong>
-                                    </p>
-
-                                    <p>
-                                        {example.explanation}
-                                    </p>
-                                </>
+                            {submissionResult.message && (
+                                <p>
+                                    {submissionResult.message}
+                                </p>
                             )}
                         </div>
-                    ))}
-                </section>
-
-                <section style={{ marginTop: "30px" }}>
-                    <h2>Constraints</h2>
-                    <pre>{problem.constraints}</pre>
-                </section>
-            </main>
-        </div>
-    );
+                    ) : (
+                        <div>
+                            Run or submit your code to see the result.
+                        </div>
+                    )}
+                </div>
+            
+            </div>
+        </main>
+    </div>
 }
