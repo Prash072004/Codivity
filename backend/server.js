@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const connectDB = require("./db");
+const { connectRedis } = require("./redis");
 const authRoutes = require("./routes/authRoutes");
 const authMiddleware = require("./middleware/authMiddleware");
 const profileRoutes = require("./routes/profileRoutes");
@@ -35,6 +36,11 @@ app.use("/api/v1/user-problems", userProblemRoutes);
 const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
+    connectRedis()
+        .catch((error) => {
+            console.error("Redis connection failed:", error.message);
+        });
+
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
     });
