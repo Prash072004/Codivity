@@ -34,14 +34,13 @@ export function Problem() {
     }, [slug]);
 
     if (loading) {
-        return (
-            <>
-                <Navbar />
-                <div style={{ padding: "30px" }}>
-                    Loading problem...
-                </div>
-            </>
-        );
+        return <div>
+            <Navbar />
+            
+            <div style={{ padding: "30px" }}>
+                Loading problem...
+            </div>
+        </div>
     }
 
     if (error) {

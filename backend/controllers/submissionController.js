@@ -1,7 +1,7 @@
 const Submission = require("../models/Submission.js");
 const Problem = require("../models/Problem.js");
 const Language = require("../models/Language.js");
-const UserProblem = require("../models/UserProblem.js");
+const submissionQueue = require("../submissionQueue.js");
 
 async function createSubmission(req, res) {
     try {
@@ -32,52 +32,26 @@ async function createSubmission(req, res) {
             });
         }
 
-        // For now, we are not executing the code.
-        // The judge system will be added later.
-        // Temporary status
-        const status = "Accepted";
-
         // Save submission
         const submission = await Submission.create({
             userId: req.user.userId,
             problemId,
             languageId,
             code,
-            status
+            status: "PENDING"
         });
 
-        // Update user's problem progress
-        if (status === "Accepted") {
-            await UserProblem.findOneAndUpdate(
-                {
-                    userId: req.user.userId,
-                    problemId
-                },
-                {
-                    status: "Solved",
-                    solvedAt: new Date()
-                },
-                {
-                    upsert: true,
-                    new: true
-                }
-            );
-        }
-        else {
-            await UserProblem.findOneAndUpdate(
-                {
-                    userId: req.user.userId,
-                    problemId
-                },
-                {
-                    $setOnInsert: {
-                        status: "Attempted"
-                    }
-                },
-                {
-                    upsert: true
-                }
-            );
+        try {
+            await submissionQueue.add("submission", {
+                submissionId: submission._id.toString()
+            });
+        } catch (queueError) {
+            console.error("Submission queue error:", queueError);
+
+            return res.status(503).json({
+                message: "Submission created but could not be queued",
+                submissionId: submission._id
+            });
         }
 
         return res.status(201).json({
