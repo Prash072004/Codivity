@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "redis:check": "node redis-check.js",
-    "submission-queue:check": "node submission-queue-check.js"
+    "worker": "node worker/submissionWorker.js"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +16,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.5",
     "redis": "^6.2.1"
