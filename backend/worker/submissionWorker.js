@@ -7,6 +7,7 @@ const Submission = require("../models/Submission.js");
 const Problem = require("../models/Problem.js");
 const TestCase = require("../models/TestCase.js");
 const Language = require("../models/Language.js");
+const { executeCode } = require("../services/executionService.js");
 
 async function startWorker() {
     await mongoose.connect(process.env.MONGODB_URI);
@@ -43,15 +44,37 @@ async function startWorker() {
                 throw new Error(`Language not found: ${submission.languageId}`);
             }
 
-            console.log(`Submission loaded: ${submission._id}`);
-            console.log(`Problem loaded: ${problem.title}`);
-            console.log(`Language loaded: ${language.name} ${language.version}`);
-            console.log(`Test cases loaded: ${testCases.length}`);
-            console.log(`Submission status: ${submission.status}`);
+            const testCase = testCases[0];
+
+            if (!testCase) {
+                throw new Error(`No test cases found for problem: ${submission.problemId}`);
+            }
+
+            const executionResult = await executeCode({
+                language,
+                sourceCode: submission.code,
+                input: testCase.input,
+                limits: {
+                    timeoutMs: 5000,
+                    memoryMb: 128,
+                    cpus: 1
+                }
+            });
+
+            console.log("Submission execution summary:", {
+                submissionId: submission._id.toString(),
+                status: executionResult.status,
+                exitCode: executionResult.exitCode,
+                stdout: executionResult.stdout,
+                stderr: executionResult.stderr,
+                runtime: executionResult.runtime,
+                memory: executionResult.memory
+            });
 
             return {
                 submissionId,
-                status: "DATA_LOADED"
+                status: "EXECUTION_COMPLETED",
+                execution: executionResult
             };
         },
         {
