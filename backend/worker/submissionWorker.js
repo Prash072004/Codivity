@@ -44,37 +44,46 @@ async function startWorker() {
                 throw new Error(`Language not found: ${submission.languageId}`);
             }
 
-            const testCase = testCases[0];
-
-            if (!testCase) {
+            if (testCases.length === 0) {
                 throw new Error(`No test cases found for problem: ${submission.problemId}`);
             }
 
-            const executionResult = await executeCode({
-                language,
-                sourceCode: submission.code,
-                input: testCase.input,
-                limits: {
-                    timeoutMs: 5000,
-                    memoryMb: 128,
-                    cpus: 1
-                }
-            });
+            const executionResults = [];
+
+            for (const testCase of testCases) {
+                const execution = await executeCode({
+                    language,
+                    sourceCode: submission.code,
+                    input: testCase.input,
+                    limits: {
+                        timeoutMs: 5000,
+                        memoryMb: 128,
+                        cpus: 1
+                    }
+                });
+
+                executionResults.push({
+                    testCaseId: testCase._id.toString(),
+                    execution
+                });
+            }
 
             console.log("Submission execution summary:", {
                 submissionId: submission._id.toString(),
-                status: executionResult.status,
-                exitCode: executionResult.exitCode,
-                stdout: executionResult.stdout,
-                stderr: executionResult.stderr,
-                runtime: executionResult.runtime,
-                memory: executionResult.memory
+                testCaseCount: executionResults.length,
+                executions: executionResults.map(({ testCaseId, execution }) => ({
+                    testCaseId,
+                    status: execution.status,
+                    exitCode: execution.exitCode,
+                    runtime: execution.runtime,
+                    memory: execution.memory
+                }))
             });
 
             return {
                 submissionId,
                 status: "EXECUTION_COMPLETED",
-                execution: executionResult
+                executions: executionResults
             };
         },
         {
