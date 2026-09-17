@@ -6,7 +6,7 @@ const { spawn } = require("child_process");
 const CPP_IMAGE = "codivity-cpp-execution:dev";
 
 function runCommand(command, args, options = {}) {
-    const { input, timeoutMs } = options;
+    const { input, timeoutMs, onTimeout } = options;
 
     return new Promise((resolve, reject) => {
         const child = spawn(command, args, {
@@ -26,8 +26,17 @@ function runCommand(command, args, options = {}) {
         });
 
         if (timeoutMs) {
-            timeout = setTimeout(() => {
+            timeout = setTimeout(async () => {
                 timedOut = true;
+
+                try {
+                    if (onTimeout) {
+                        await onTimeout();
+                    }
+                } catch (error) {
+                    console.error("Timeout cleanup error:", error);
+                }
+
                 child.kill();
             }, timeoutMs);
         }
@@ -125,12 +134,23 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
         const startedAt = Date.now();
         const executionResult = await runCommand("docker", [
             "exec", "-i", containerId, "/tmp/main"
-        ], { input, timeoutMs: executionLimits.timeoutMs });
+        ], {
+            input,
+            timeoutMs: executionLimits.timeoutMs,
+            onTimeout: async () => {
+                await runCommand("docker", [
+                    "kill",
+                    containerId
+                ], { timeoutMs: 5000 });
+            }
+        });
 
         return {
-            status: executionResult.timedOut || executionResult.exitCode !== 0
-                ? "RUNTIME_ERROR"
-                : "EXECUTED",
+            status: executionResult.timedOut
+                ? "TIME_LIMIT_EXCEEDED"
+                : executionResult.exitCode !== 0
+                    ? "RUNTIME_ERROR"
+                    : "EXECUTED",
             stdout: executionResult.stdout,
             stderr: executionResult.stderr,
             exitCode: executionResult.exitCode,
