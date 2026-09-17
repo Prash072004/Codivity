@@ -1,4 +1,5 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const mongoose = require("mongoose");
 const { Worker } = require("bullmq");
@@ -7,6 +8,7 @@ const Submission = require("../models/Submission.js");
 const Problem = require("../models/Problem.js");
 const TestCase = require("../models/TestCase.js");
 const Language = require("../models/Language.js");
+const UserProblem = require("../models/UserProblem.js");
 const { executeCode } = require("../services/executionService.js");
 const { judgeExecution } = require("../services/judgeService.js");
 
@@ -50,6 +52,7 @@ async function startWorker() {
             }
 
             const testCaseResults = [];
+            const executionResults = [];
             let passedTestCases = 0;
             let verdict = "Accepted";
 
@@ -65,6 +68,8 @@ async function startWorker() {
                     }
                 });
 
+                executionResults.push(executionResult);
+                
                 const testCaseVerdict = judgeExecution({
                     executionResult,
                     expectedOutput: testCase.expectedOutput
@@ -81,6 +86,47 @@ async function startWorker() {
                 }
 
                 passedTestCases += 1;
+            }
+
+            // Calculate runtime and memory
+            const runtimeValues = executionResults
+                .map((result) => result.runtime)
+                .filter((runtime) => Number.isFinite(runtime));
+
+            const memoryValues = executionResults
+                .map((result) => result.memory)
+                .filter((memory) => Number.isFinite(memory));
+
+            const runtime = runtimeValues.length > 0 ? Math.max(...runtimeValues) : null;
+
+            const memory = memoryValues.length > 0 ? Math.max(...memoryValues) : null;
+
+            await Submission.findByIdAndUpdate(submissionId,
+                {
+                    status: verdict,
+                    runtime,
+                    memory
+                },
+                { runValidators: true }
+            );
+
+            const userProblem = await UserProblem.findOne({
+                userId: submission.userId,
+                problemId: submission.problemId
+            });
+
+            if (userProblem) {
+                if (verdict === "Accepted") {
+                    userProblem.status = "Solved";
+
+                    if (!userProblem.solvedAt) {
+                        userProblem.solvedAt = new Date();
+                    }
+                } else {
+                    userProblem.status = "Attempted";
+                }
+
+                await userProblem.save();
             }
 
             const result = {
