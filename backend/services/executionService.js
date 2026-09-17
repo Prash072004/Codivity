@@ -184,10 +184,21 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
             runtime: Date.now() - startedAt,
             memory: null
         };
+    } catch (error) {
+        console.error("C++ execution infrastructure error:", error);
+        throw new Error("C++ execution service failed");
     } finally {
         if (containerId) {
-            await runCommand("docker", ["rm", "-f", containerId], { timeoutMs: 10000 })
-                .catch(() => {});
+            try {
+                await runCommand("docker", ["rm", "-f", containerId], {
+                    timeoutMs: 10000
+                });
+            } catch (error) {
+                console.error(
+                    `Failed to clean up execution container ${containerId}:`,
+                    error
+                );
+            }
         }
 
         await fs.rm(temporaryDirectory, { recursive: true, force: true });
