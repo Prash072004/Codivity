@@ -107,7 +107,7 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
         await fs.writeFile(sourcePath, sourceCode, "utf8");
 
         const container = await runCommand("docker", [
-            "run", "-d", "--rm", "--network", "none",
+            "run", "-d", "--rm", "--read-only", "--network", "none",
             "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
             "--memory", `${executionLimits.memoryMb}m`,
             "--cpus", String(executionLimits.cpus),
@@ -122,17 +122,23 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
 
         containerId = container.stdout.trim();
 
-        const copyResult = await runCommand("docker", [
-            "cp", sourcePath, `${containerId}:/tmp/main.cpp`
-        ], { timeoutMs: 10000 });
+        const sourceCodeResult = await runCommand("docker", [
+            "exec", "-i", containerId, "bash", "-c",
+            "cat > /workspace/main.cpp"
+        ], {
+            input: sourceCode,
+            timeoutMs: 10000
+        });
 
-        if (copyResult.exitCode !== 0) {
-            throw new Error(`Failed to copy source into execution container: ${copyResult.stderr.trim()}`);
+        if (sourceCodeResult.exitCode !== 0) {
+            throw new Error(
+                `Failed to write source into execution container: ${sourceCodeResult.stderr.trim()}`
+            );
         }
 
         const compileResult = await runCommand("docker", [
             "exec", containerId, "g++", "-std=c++17", "-O2",
-            "/tmp/main.cpp", "-o", "/tmp/main"
+            "/workspace/main.cpp", "-o", "/workspace/main"
         ], { timeoutMs: executionLimits.timeoutMs });
 
         if (compileResult.timedOut || compileResult.exitCode !== 0) {
@@ -148,7 +154,7 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
 
         const startedAt = Date.now();
         const executionResult = await runCommand("docker", [
-            "exec", "-i", containerId, "/tmp/main"
+            "exec", "-i", containerId, "/workspace/main"
         ], {
             input,
             timeoutMs: executionLimits.timeoutMs,
