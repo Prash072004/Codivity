@@ -28,11 +28,14 @@ export function CodeEditor({ problemId, examples, onResult }) {
     }, []);
 
     useEffect(() => {
+        isMountedRef.current = true;
+
         return () => {
             isMountedRef.current = false;
 
             if (pollTimerRef.current) {
                 clearTimeout(pollTimerRef.current);
+                pollTimerRef.current = null;
             }
         };
     }, []);
@@ -56,6 +59,50 @@ export function CodeEditor({ problemId, examples, onResult }) {
             }
         };`
         );
+    };
+
+    const pollSubmission = async (submissionId) => {
+        if (!isMountedRef.current) {
+            return;
+        }
+
+        try {
+            const response = await api.get(`/submissions/${submissionId}`);
+
+            const submission = response.data.submission;
+
+            if (!isMountedRef.current) {
+                return;
+            }
+
+            onResult(submission);
+
+            if (submission.status === "PENDING") {
+                pollTimerRef.current = setTimeout(() => {
+                    pollSubmission(submissionId);
+                }, 1000);
+            }
+
+        } catch (error) {
+            console.error(
+                "Failed to fetch submission status:",
+                error.response?.data || error.message
+            );
+
+            if (!isMountedRef.current) {
+                return;
+            }
+
+            if (pollTimerRef.current) {
+                clearTimeout(pollTimerRef.current);
+                pollTimerRef.current = null;
+            }
+
+            onResult({
+                status: "Submission Status Error",
+                message: "Failed to retrieve submission status."
+            });
+        }
     };
 
     const handleRun = async () => {
@@ -85,13 +132,25 @@ export function CodeEditor({ problemId, examples, onResult }) {
         try {
             onResult(null);
 
+            // Stop any existing polling loop
+            if (pollTimerRef.current) {
+                clearTimeout(pollTimerRef.current);
+                pollTimerRef.current = null;
+            }
+
             const response = await api.post("/submissions", {
                 problemId,
                 languageId,
                 code
             });
 
-            onResult(response.data.submission);
+            const submission = response.data.submission;
+
+            // Immediately show PENDING
+            onResult(submission);
+
+            // Start polling
+            pollSubmission(submission._id);
 
         } catch (error) {
             console.error(
