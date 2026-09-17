@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "../services/api";
 import { RotateCcw } from 'lucide-react';
 
 export function CodeEditor({ problemId, examples, onResult }) {
     const [languages, setLanguages] = useState([]);
     const [languageId, setLanguageId] = useState("");
+    const pollTimerRef = useRef(null);
+    const isMountedRef = useRef(true);
 
     useEffect(() => {
         const fetchLanguages = async () => {
@@ -23,6 +25,16 @@ export function CodeEditor({ problemId, examples, onResult }) {
         };
 
         fetchLanguages();
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+
+            if (pollTimerRef.current) {
+                clearTimeout(pollTimerRef.current);
+            }
+        };
     }, []);
 
 
