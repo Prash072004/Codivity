@@ -91,8 +91,40 @@ async function getMySubmissions(req, res) {
     }
 }
 
+async function getSubmissionById(req, res) {
+    try {
+        const { id } = req.params;
+
+        const submission = await Submission.findById(id);
+
+        if (!submission) {
+            return res.status(404).json({
+                message: "Submission not found"
+            });
+        }
+
+        if (submission.userId.toString() !== req.user.userId.toString()) {
+            return res.status(403).json({
+                message: "You are not authorized to view this submission"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Submission fetched successfully",
+            submission
+        });
+
+    } catch (error) {
+        console.error("Get submission error:", error);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}
 
 module.exports = {
     createSubmission,
-    getMySubmissions
+    getMySubmissions,
+    getSubmissionById
 };
