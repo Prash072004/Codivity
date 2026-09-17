@@ -8,6 +8,7 @@ const Problem = require("../models/Problem.js");
 const TestCase = require("../models/TestCase.js");
 const Language = require("../models/Language.js");
 const { executeCode } = require("../services/executionService.js");
+const { judgeExecution } = require("../services/judgeService.js");
 
 async function startWorker() {
     await mongoose.connect(process.env.MONGODB_URI);
@@ -48,10 +49,12 @@ async function startWorker() {
                 throw new Error(`No test cases found for problem: ${submission.problemId}`);
             }
 
-            const executionResults = [];
+            const testCaseResults = [];
+            let passedTestCases = 0;
+            let verdict = "Accepted";
 
             for (const testCase of testCases) {
-                const execution = await executeCode({
+                const executionResult = await executeCode({
                     language,
                     sourceCode: submission.code,
                     input: testCase.input,
@@ -62,29 +65,35 @@ async function startWorker() {
                     }
                 });
 
-                executionResults.push({
-                    testCaseId: testCase._id.toString(),
-                    execution
+                const testCaseVerdict = judgeExecution({
+                    executionResult,
+                    expectedOutput: testCase.expectedOutput
                 });
+
+                testCaseResults.push({
+                    testCaseId: testCase._id.toString(),
+                    status: testCaseVerdict.status
+                });
+
+                if (testCaseVerdict.status !== "Accepted") {
+                    verdict = testCaseVerdict.status;
+                    break;
+                }
+
+                passedTestCases += 1;
             }
 
-            console.log("Submission execution summary:", {
+            const result = {
                 submissionId: submission._id.toString(),
-                testCaseCount: executionResults.length,
-                executions: executionResults.map(({ testCaseId, execution }) => ({
-                    testCaseId,
-                    status: execution.status,
-                    exitCode: execution.exitCode,
-                    runtime: execution.runtime,
-                    memory: execution.memory
-                }))
-            });
-
-            return {
-                submissionId,
-                status: "EXECUTION_COMPLETED",
-                executions: executionResults
+                verdict,
+                passedTestCases,
+                totalTestCases: testCases.length,
+                testCaseResults
             };
+
+            console.log("Submission judging summary:", result);
+
+            return result;
         },
         {
             connection: {
