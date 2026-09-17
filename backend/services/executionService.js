@@ -54,6 +54,21 @@ function runCommand(command, args, options = {}) {
     });
 }
 
+async function wasContainerOOMKilled(containerId) {
+    const inspectResult = await runCommand("docker", [
+        "inspect",
+        "--format",
+        "{{.State.OOMKilled}}",
+        containerId
+    ], { timeoutMs: 5000 });
+
+    if (inspectResult.exitCode !== 0) {
+        return false;
+    }
+
+    return inspectResult.stdout.trim() === "true";
+}
+
 function getExecutionLimits(limits = {}) {
     const timeoutMs = Number.isFinite(Number(limits.timeoutMs))
         ? Math.max(100, Number(limits.timeoutMs))
@@ -144,13 +159,19 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
                 ], { timeoutMs: 5000 });
             }
         });
+        
+        const memoryLimitExceeded = !executionResult.timedOut
+            ? await wasContainerOOMKilled(containerId)
+            : false;
 
         return {
             status: executionResult.timedOut
                 ? "TIME_LIMIT_EXCEEDED"
-                : executionResult.exitCode !== 0
-                    ? "RUNTIME_ERROR"
-                    : "EXECUTED",
+                : memoryLimitExceeded
+                    ? "MEMORY_LIMIT_EXCEEDED"
+                    : executionResult.exitCode !== 0
+                        ? "RUNTIME_ERROR"
+                        : "EXECUTED",
             stdout: executionResult.stdout,
             stderr: executionResult.stderr,
             exitCode: executionResult.exitCode,
