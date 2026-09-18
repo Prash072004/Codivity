@@ -141,7 +141,7 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
         containerId = container.stdout.trim();
 
         const sourceCodeResult = await runCommand("docker", [
-            "exec", "-i", containerId, "bash", "-c",
+            "exec", "-i", containerId, languageConfig.shell || "bash", "-c",
             `cat > /workspace/${languageConfig.sourceFile}`
         ], {
             input: sourceCode,
@@ -226,6 +226,13 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
                     containerId
                 ], { timeoutMs: 5000 });
             }
+    });
+    console.log(`${languageConfig.name} execution result:`, {
+        stdout: executionResult.stdout,
+        stderr: executionResult.stderr,
+        exitCode: executionResult.exitCode,
+        signal: executionResult.signal,
+        timedOut: executionResult.timedOut
     });
         
         const memoryLimitExceeded = !executionResult.timedOut

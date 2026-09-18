@@ -47,11 +47,13 @@ const executionLanguages = {
     javascript: {
         key: "javascript",
         name: "JavaScript",
-        enabled: false,
+        enabled: true,
 
         dockerImage: "node:22-alpine",
 
         sourceFile: "main.js",
+
+        shell: "sh",
 
         compile: null,
 
