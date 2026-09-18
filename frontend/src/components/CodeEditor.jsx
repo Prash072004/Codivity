@@ -40,25 +40,41 @@ export function CodeEditor({ problemId, examples, onResult }) {
         };
     }, []);
 
+    const defaultCode = `#include <iostream>
+using namespace std;
 
-    const [code, setCode] = useState(
-        `class Solution {
-        public:
-            vector<int> twoSum(vector<int>& nums, int target) {
-                
-            }
-        };`
-    );
+int main() {
+    // Write your solution here
+
+    return 0;
+}`;
+
+    const [code, setCode] = useState(defaultCode);
 
     const handleReset = () => {
-        setCode(
-        `class Solution {
-        public:
-            vector<int> twoSum(vector<int>& nums, int target) {
-                
-            }
-        };`
-        );
+        setCode(defaultCode);
+    };
+
+    const handleKeyDown = (event) => {
+        if (event.key === "Tab") {
+            event.preventDefault();
+
+            const textarea = event.target;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+
+            const newCode =
+                code.substring(0, start) +
+                "    " +
+                code.substring(end);
+
+            setCode(newCode);
+
+            setTimeout(() => {
+                textarea.selectionStart = start + 4;
+                textarea.selectionEnd = start + 4;
+            }, 0);
+        }
     };
 
     const pollSubmission = async (submissionId) => {
@@ -205,6 +221,7 @@ export function CodeEditor({ problemId, examples, onResult }) {
             onChange={(event) =>
                 setCode(event.target.value)
             }
+            onKeyDown={handleKeyDown}
             spellCheck={false}
             style={{ flex: 1, width: "100%", boxSizing: "border-box", resize: "none", backgroundColor: "#111", color: "white", border: "none", outline: "none", padding: "15px", fontFamily: "monospace", fontSize: "14px", lineHeight: "1.5" }}
         />

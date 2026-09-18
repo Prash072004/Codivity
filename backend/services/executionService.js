@@ -2,15 +2,18 @@ const fs = require("fs/promises");
 const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
-
-const CPP_IMAGE = "codivity-cpp-execution:dev";
+const { getExecutionConfig } = require("../config/executionLanguages");
 
 function runCommand(command, args, options = {}) {
     const { input, timeoutMs, onTimeout } = options;
 
     return new Promise((resolve, reject) => {
         const child = spawn(command, args, {
-            stdio: ["pipe", "pipe", "pipe"]
+            stdio: [
+                input === undefined ? "ignore" : "pipe",
+                "pipe",
+                "pipe"
+            ]
         });
         let stdout = "";
         let stderr = "";
@@ -50,7 +53,9 @@ function runCommand(command, args, options = {}) {
             resolve({ stdout, stderr, exitCode, signal, timedOut });
         });
 
-        child.stdin.end(input === undefined ? undefined : input);
+        if (input !== undefined) {
+            child.stdin.end(input);
+        }
     });
 }
 
@@ -73,21 +78,30 @@ function getExecutionLimits(limits = {}) {
     const timeoutMs = Number.isFinite(Number(limits.timeoutMs))
         ? Math.max(100, Number(limits.timeoutMs))
         : 5000;
+
     const memoryMb = Number.isFinite(Number(limits.memoryMb))
         ? Math.max(32, Number(limits.memoryMb))
         : 128;
+
     const cpus = Number.isFinite(Number(limits.cpus))
         ? Math.max(0.1, Number(limits.cpus))
         : 1;
 
-    return { timeoutMs, memoryMb, cpus };
+    return {
+        timeoutMs,
+        memoryMb,
+        cpus,
+        pidsLimit: 64
+    };
 }
 
 async function executeCode({ language, sourceCode, input = "", limits = {} }) {
-    const languageName = String(language?.name || "").toLowerCase();
+    const languageConfig = getExecutionConfig(language);
 
-    if (!languageName.includes("c++") && !languageName.includes("cpp")) {
-        throw new Error(`Unsupported execution language: ${language?.name || "unknown"}`);
+    if (!languageConfig.enabled) {
+        throw new Error(
+            `Execution is not enabled for ${languageConfig.name}`
+        );
     }
 
     if (typeof sourceCode !== "string") {
@@ -99,8 +113,12 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
     }
 
     const executionLimits = getExecutionLimits(limits);
+
     const temporaryDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "codivity-cpp-"));
-    const sourcePath = path.join(temporaryDirectory, "main.cpp");
+    const sourcePath = path.join(
+        temporaryDirectory,
+        languageConfig.sourceFile
+    );
     let containerId;
 
     try {
@@ -111,9 +129,9 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
             "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
             "--memory", `${executionLimits.memoryMb}m`,
             "--cpus", String(executionLimits.cpus),
-            "--pids-limit", "64",
+            "--pids-limit", String(executionLimits.pidsLimit),
             "--tmpfs", "/workspace:rw,exec,size=64m",
-            CPP_IMAGE, "tail", "-f", "/dev/null"
+            languageConfig.dockerImage, "tail", "-f", "/dev/null"
         ], { timeoutMs: 10000 });
 
         if (container.exitCode !== 0 || !container.stdout.trim()) {
@@ -124,7 +142,7 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
 
         const sourceCodeResult = await runCommand("docker", [
             "exec", "-i", containerId, "bash", "-c",
-            "cat > /workspace/main.cpp"
+            `cat > /workspace/${languageConfig.sourceFile}`
         ], {
             input: sourceCode,
             timeoutMs: 10000
@@ -136,12 +154,42 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
             );
         }
 
+        const compileArgs = languageConfig.compile.args.map((arg) => {
+            if (arg === languageConfig.sourceFile) {
+                return `/workspace/${arg}`;
+            }
+
+            if (arg === "main") {
+                return "/workspace/main";
+            }
+
+            return arg;
+        });
+
+        console.log("C++ compile command:", [
+            "docker",
+            "exec",
+            containerId,
+            languageConfig.compile.command,
+            ...compileArgs
+        ]);
+
         const compileResult = await runCommand("docker", [
-            "exec", containerId, "g++", "-std=c++17", "-O2",
-            "/workspace/main.cpp", "-o", "/workspace/main"
-        ], { timeoutMs: executionLimits.timeoutMs });
+            "exec",
+            containerId,
+            languageConfig.compile.command,
+            ...compileArgs
+        ], {
+            timeoutMs: languageConfig.compileTimeoutMs || executionLimits.timeoutMs        
+        });
 
         if (compileResult.timedOut || compileResult.exitCode !== 0) {
+            console.error("C++ compilation failed:");
+            console.error("Exit code:", compileResult.exitCode);
+            console.error("Signal:", compileResult.signal);
+            console.error("Timed out:", compileResult.timedOut);
+            console.error("Compiler stderr:", compileResult.stderr);
+
             return {
                 status: "COMPILATION_ERROR",
                 stdout: compileResult.stdout,
@@ -153,8 +201,17 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
         }
 
         const startedAt = Date.now();
+        const runCommandPath =
+            languageConfig.run.command === "./main"
+                ? "/workspace/main"
+                : languageConfig.run.command;
+
         const executionResult = await runCommand("docker", [
-            "exec", "-i", containerId, "/workspace/main"
+            "exec",
+            "-i",
+            containerId,
+            runCommandPath,
+            ...languageConfig.run.args
         ], {
             input,
             timeoutMs: executionLimits.timeoutMs,
