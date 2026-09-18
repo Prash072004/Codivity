@@ -8,6 +8,8 @@ const executionLanguages = {
 
         sourceFile: "main.cpp",
 
+        shell: "bash",
+
         compileTimeoutMs: 20000,
 
         compile: {
@@ -35,6 +37,8 @@ const executionLanguages = {
         dockerImage: "python:3.12-slim",
 
         sourceFile: "main.py",
+
+        shell: "bash",
 
         compile: null,
 
@@ -86,7 +90,70 @@ function getExecutionConfig(language) {
     );
 }
 
+function validateExecutionConfig(config) {
+    if (!config || typeof config !== "object") {
+        throw new Error("Invalid execution configuration");
+    }
+
+    if (typeof config.dockerImage !== "string" ||
+        !config.dockerImage.trim()) {
+        throw new Error(
+            `Invalid execution configuration for ${config.name || "unknown"}: dockerImage is required`
+        );
+    }
+
+    if (typeof config.sourceFile !== "string" ||
+        !config.sourceFile.trim()) {
+        throw new Error(
+            `Invalid execution configuration for ${config.name || "unknown"}: sourceFile is required`
+        );
+    }
+
+    if (!config.run || typeof config.run !== "object") {
+        throw new Error(
+            `Invalid execution configuration for ${config.name || "unknown"}: run configuration is required`
+        );
+    }
+
+    if (typeof config.run.command !== "string" ||
+        !config.run.command.trim()) {
+        throw new Error(
+            `Invalid execution configuration for ${config.name || "unknown"}: run command is required`
+        );
+    }
+
+    if (!Array.isArray(config.run.args)) {
+        throw new Error(
+            `Invalid execution configuration for ${config.name || "unknown"}: run args must be an array`
+        );
+    }
+
+    if (config.compile !== null && config.compile !== undefined) {
+        if (typeof config.compile !== "object") {
+            throw new Error(
+                `Invalid execution configuration for ${config.name || "unknown"}: compile configuration is invalid`
+            );
+        }
+
+        if (typeof config.compile.command !== "string" ||
+            !config.compile.command.trim()) {
+            throw new Error(
+                `Invalid execution configuration for ${config.name || "unknown"}: compile command is required`
+            );
+        }
+
+        if (!Array.isArray(config.compile.args)) {
+            throw new Error(
+                `Invalid execution configuration for ${config.name || "unknown"}: compile args must be an array`
+            );
+        }
+    }
+
+    return true;
+}
+
 module.exports = {
     executionLanguages,
-    getExecutionConfig
+    getExecutionConfig,
+    validateExecutionConfig
 };

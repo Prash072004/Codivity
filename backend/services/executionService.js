@@ -2,7 +2,7 @@ const fs = require("fs/promises");
 const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
-const { getExecutionConfig } = require("../config/executionLanguages");
+const { getExecutionConfig, validateExecutionConfig } = require("../config/executionLanguages");
 
 function runCommand(command, args, options = {}) {
     const { input, timeoutMs, onTimeout } = options;
@@ -97,6 +97,8 @@ function getExecutionLimits(limits = {}) {
 
 async function executeCode({ language, sourceCode, input = "", limits = {} }) {
     const languageConfig = getExecutionConfig(language);
+    
+    validateExecutionConfig(languageConfig);
 
     if (!languageConfig.enabled) {
         throw new Error(
