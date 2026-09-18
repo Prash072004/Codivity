@@ -30,7 +30,7 @@ const executionLanguages = {
     python: {
         key: "python",
         name: "Python",
-        enabled: false,
+        enabled: true,
 
         dockerImage: "python:3.12-slim",
 

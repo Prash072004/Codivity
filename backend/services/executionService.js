@@ -154,66 +154,71 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
             );
         }
 
-        const compileArgs = languageConfig.compile.args.map((arg) => {
-            if (arg === languageConfig.sourceFile) {
-                return `/workspace/${arg}`;
+        if (languageConfig.compile) {
+            const compileArgs = languageConfig.compile.args.map((arg) => {
+                if (arg === languageConfig.sourceFile) {
+                    return `/workspace/${arg}`;
+                }
+
+                if (arg === "main") {
+                    return "/workspace/main";
+                }
+
+                return arg;
+            });
+
+            const compileResult = await runCommand("docker", [
+                "exec",
+                containerId,
+                languageConfig.compile.command,
+                ...compileArgs
+            ], {
+                timeoutMs:
+                    languageConfig.compileTimeoutMs ||
+                    executionLimits.timeoutMs
+            });
+
+            if (compileResult.timedOut || compileResult.exitCode !== 0) {
+                console.error(`${languageConfig.name} compilation failed:`);
+                console.error("Exit code:", compileResult.exitCode);
+                console.error("Signal:", compileResult.signal);
+                console.error("Timed out:", compileResult.timedOut);
+                console.error("Compiler stderr:", compileResult.stderr);
+
+                return {
+                    status: "COMPILATION_ERROR",
+                    stdout: compileResult.stdout,
+                    stderr: compileResult.stderr || "Compilation failed",
+                    exitCode: compileResult.exitCode,
+                    runtime: null,
+                    memory: null
+                };
             }
-
-            if (arg === "main") {
-                return "/workspace/main";
-            }
-
-            return arg;
-        });
-
-        console.log("C++ compile command:", [
-            "docker",
-            "exec",
-            containerId,
-            languageConfig.compile.command,
-            ...compileArgs
-        ]);
-
-        const compileResult = await runCommand("docker", [
-            "exec",
-            containerId,
-            languageConfig.compile.command,
-            ...compileArgs
-        ], {
-            timeoutMs: languageConfig.compileTimeoutMs || executionLimits.timeoutMs        
-        });
-
-        if (compileResult.timedOut || compileResult.exitCode !== 0) {
-            console.error("C++ compilation failed:");
-            console.error("Exit code:", compileResult.exitCode);
-            console.error("Signal:", compileResult.signal);
-            console.error("Timed out:", compileResult.timedOut);
-            console.error("Compiler stderr:", compileResult.stderr);
-
-            return {
-                status: "COMPILATION_ERROR",
-                stdout: compileResult.stdout,
-                stderr: compileResult.stderr || "Compilation failed",
-                exitCode: compileResult.exitCode,
-                runtime: null,
-                memory: null
-            };
         }
 
-        const startedAt = Date.now();
-        const runCommandPath =
-            languageConfig.run.command === "./main"
-                ? "/workspace/main"
-                : languageConfig.run.command;
+    const startedAt = Date.now();
 
-        const executionResult = await runCommand("docker", [
-            "exec",
-            "-i",
-            containerId,
-            runCommandPath,
-            ...languageConfig.run.args
-        ], {
-            input,
+    const runCommandPath =
+        languageConfig.run.command === "./main"
+            ? "/workspace/main"
+            : languageConfig.run.command;
+
+    const runArgs = languageConfig.run.args.map((arg) => {
+        if (arg === languageConfig.sourceFile) {
+            return `/workspace/${arg}`;
+        }
+
+        return arg;
+    });
+
+    const executionResult = await runCommand("docker", [
+        "exec",
+        "-i",
+        containerId,
+        runCommandPath,
+        ...runArgs
+    ], {
+        input,
             timeoutMs: executionLimits.timeoutMs,
             onTimeout: async () => {
                 await runCommand("docker", [
@@ -221,7 +226,7 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
                     containerId
                 ], { timeoutMs: 5000 });
             }
-        });
+    });
         
         const memoryLimitExceeded = !executionResult.timedOut
             ? await wasContainerOOMKilled(containerId)
@@ -242,9 +247,11 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
             memory: null
         };
     } catch (error) {
-        console.error("C++ execution infrastructure error:", error);
-        throw new Error("C++ execution service failed");
-    } finally {
+        console.error(
+            `${languageConfig.name} execution infrastructure error:`,
+            error
+        );
+        throw new Error(`${languageConfig.name} execution service failed`);    } finally {
         if (containerId) {
             try {
                 await runCommand("docker", ["rm", "-f", containerId], {

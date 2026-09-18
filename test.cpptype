@@ -1,1 +1,0 @@
-int main() { std::cout << "OK"; return 0; }  test.cpp
