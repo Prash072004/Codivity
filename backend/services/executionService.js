@@ -74,24 +74,33 @@ async function wasContainerOOMKilled(containerId) {
     return inspectResult.stdout.trim() === "true";
 }
 
-function getExecutionLimits(limits = {}) {
-    const timeoutMs = Number.isFinite(Number(limits.timeoutMs))
-        ? Math.max(100, Number(limits.timeoutMs))
+function getExecutionLimits(limits = {}, languageLimits = {}) {
+    const effectiveLimits = {
+        ...limits,
+        ...languageLimits
+    };
+
+    const timeoutMs = Number.isFinite(Number(effectiveLimits.timeoutMs))
+        ? Math.max(100, Number(effectiveLimits.timeoutMs))
         : 5000;
 
-    const memoryMb = Number.isFinite(Number(limits.memoryMb))
-        ? Math.max(32, Number(limits.memoryMb))
+    const memoryMb = Number.isFinite(Number(effectiveLimits.memoryMb))
+        ? Math.max(32, Number(effectiveLimits.memoryMb))
         : 128;
 
-    const cpus = Number.isFinite(Number(limits.cpus))
-        ? Math.max(0.1, Number(limits.cpus))
+    const cpus = Number.isFinite(Number(effectiveLimits.cpus))
+        ? Math.max(0.1, Number(effectiveLimits.cpus))
         : 1;
+
+    const pidsLimit = Number.isInteger(Number(effectiveLimits.pidsLimit))
+        ? Number(effectiveLimits.pidsLimit)
+        : 64;
 
     return {
         timeoutMs,
         memoryMb,
         cpus,
-        pidsLimit: 64
+        pidsLimit
     };
 }
 
@@ -114,7 +123,10 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
         throw new Error("input must be a string");
     }
 
-    const executionLimits = getExecutionLimits(limits);
+    const executionLimits = getExecutionLimits(
+        limits,
+        languageConfig.limits
+    );
 
     const temporaryDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "codivity-cpp-"));
     const sourcePath = path.join(

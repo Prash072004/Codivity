@@ -33,15 +33,10 @@ const executionLanguages = {
         key: "python",
         name: "Python",
         enabled: true,
-
         dockerImage: "python:3.12-slim",
-
         sourceFile: "main.py",
-
         shell: "bash",
-
         compile: null,
-
         run: {
             command: "python3",
             args: ["main.py"]
@@ -146,6 +141,75 @@ function validateExecutionConfig(config) {
             throw new Error(
                 `Invalid execution configuration for ${config.name || "unknown"}: compile args must be an array`
             );
+        }
+    }
+
+    // Optional language-specific resource limits
+    if (config.limits !== undefined) {
+        if (
+            !config.limits ||
+            typeof config.limits !== "object" ||
+            Array.isArray(config.limits)
+        ) {
+            throw new Error(
+                `Invalid execution configuration for ${config.name || "unknown"}: limits must be an object`
+            );
+        }
+
+        const allowedLimitKeys = [
+            "timeoutMs",
+            "memoryMb",
+            "pidsLimit"
+        ];
+
+        for (const key of Object.keys(config.limits)) {
+            if (!allowedLimitKeys.includes(key)) {
+                throw new Error(
+                    `Invalid execution configuration for ${config.name || "unknown"}: unsupported limit "${key}"`
+                );
+            }
+        }
+
+        if (config.limits.timeoutMs !== undefined) {
+            const timeoutMs = config.limits.timeoutMs;
+
+            if (
+                typeof timeoutMs !== "number" ||
+                !Number.isFinite(timeoutMs) ||
+                timeoutMs < 100
+            ) {
+                throw new Error(
+                    `Invalid execution configuration for ${config.name || "unknown"}: timeoutMs is invalid`
+                );
+            }
+        }
+
+        if (config.limits.memoryMb !== undefined) {
+            const memoryMb = config.limits.memoryMb;
+
+            if (
+                typeof memoryMb !== "number" ||
+                !Number.isFinite(memoryMb) ||
+                memoryMb < 32
+            ) {
+                throw new Error(
+                    `Invalid execution configuration for ${config.name || "unknown"}: memoryMb is invalid`
+                );
+            }
+        }
+
+        if (config.limits.pidsLimit !== undefined) {
+            const pidsLimit = config.limits.pidsLimit;
+
+            if (
+                typeof pidsLimit !== "number" ||
+                !Number.isInteger(pidsLimit) ||
+                pidsLimit < 1
+            ) {
+                throw new Error(
+                    `Invalid execution configuration for ${config.name || "unknown"}: pidsLimit is invalid`
+                );
+            }
         }
     }
 
