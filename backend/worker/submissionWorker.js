@@ -11,6 +11,7 @@ const Language = require("../models/Language.js");
 const UserProblem = require("../models/UserProblem.js");
 const { executeCode } = require("../services/executionService.js");
 const { judgeExecution } = require("../services/judgeService.js");
+const { mapExecutionStatus } = require("../services/executionStatusMapper.js");
 
 async function startWorker() {
     await mongoose.connect(process.env.MONGODB_URI);
@@ -68,24 +69,36 @@ async function startWorker() {
                     }
                 });
 
-                executionResults.push(executionResult);
-                
-                const testCaseVerdict = judgeExecution({
-                    executionResult,
-                    expectedOutput: testCase.expectedOutput
-                });
+        executionResults.push(executionResult);
 
-                testCaseResults.push({
-                    testCaseId: testCase._id.toString(),
-                    status: testCaseVerdict.status
-                });
+        const executionStatus = mapExecutionStatus(executionResult);
 
-                if (testCaseVerdict.status !== "Accepted") {
-                    verdict = testCaseVerdict.status;
-                    break;
-                }
+        if (executionStatus) {
+            testCaseResults.push({
+                testCaseId: testCase._id.toString(),
+                status: executionStatus
+            });
 
-                passedTestCases += 1;
+            verdict = executionStatus;
+            break;
+        }
+
+        const testCaseVerdict = judgeExecution({
+            executionResult,
+            expectedOutput: testCase.expectedOutput
+        });
+
+        testCaseResults.push({
+            testCaseId: testCase._id.toString(),
+            status: testCaseVerdict.status
+        });
+
+        if (testCaseVerdict.status !== "Accepted") {
+            verdict = testCaseVerdict.status;
+            break;
+        }
+
+        passedTestCases += 1;
             }
 
             // Calculate runtime and memory
