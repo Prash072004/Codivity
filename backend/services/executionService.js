@@ -104,6 +104,24 @@ function getExecutionLimits(limits = {}, languageLimits = {}) {
     };
 }
 
+function normalizeExecutionResult({
+    status,
+    stdout = "",
+    stderr = "",
+    exitCode = null,
+    runtime = null,
+    memory = null
+}) {
+    return {
+        status,
+        stdout: stdout ?? "",
+        stderr: stderr ?? "",
+        exitCode: exitCode ?? null,
+        runtime: runtime ?? null,
+        memory: memory ?? null
+    };
+}
+
 async function executeCode({ language, sourceCode, input = "", limits = {} }) {
     const languageConfig = getExecutionConfig(language);
     
@@ -199,14 +217,14 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
                 console.error("Timed out:", compileResult.timedOut);
                 console.error("Compiler stderr:", compileResult.stderr);
 
-                return {
+                return normalizeExecutionResult({
                     status: "COMPILATION_ERROR",
                     stdout: compileResult.stdout,
                     stderr: compileResult.stderr || "Compilation failed",
                     exitCode: compileResult.exitCode,
                     runtime: null,
                     memory: null
-                };
+                });
             }
         }
 
@@ -241,19 +259,12 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
                 ], { timeoutMs: 5000 });
             }
     });
-    console.log(`${languageConfig.name} execution result:`, {
-        stdout: executionResult.stdout,
-        stderr: executionResult.stderr,
-        exitCode: executionResult.exitCode,
-        signal: executionResult.signal,
-        timedOut: executionResult.timedOut
-    });
         
         const memoryLimitExceeded = !executionResult.timedOut
             ? await wasContainerOOMKilled(containerId)
             : false;
 
-        return {
+        return normalizeExecutionResult({
             status: executionResult.timedOut
                 ? "TIME_LIMIT_EXCEEDED"
                 : memoryLimitExceeded
@@ -266,13 +277,22 @@ async function executeCode({ language, sourceCode, input = "", limits = {} }) {
             exitCode: executionResult.exitCode,
             runtime: Date.now() - startedAt,
             memory: null
-        };
+        });
     } catch (error) {
         console.error(
             `${languageConfig.name} execution infrastructure error:`,
             error
         );
-        throw new Error(`${languageConfig.name} execution service failed`);    } finally {
+
+        return normalizeExecutionResult({
+            status: "EXECUTION_ERROR",
+            stdout: "",
+            stderr: error.message || "Execution service failed",
+            exitCode: null,
+            runtime: null,
+            memory: null
+        });
+    } finally {
         if (containerId) {
             try {
                 await runCommand("docker", ["rm", "-f", containerId], {
