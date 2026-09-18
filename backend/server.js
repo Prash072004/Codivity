@@ -13,6 +13,7 @@ const testCaseRoutes = require("./routes/testCaseRoutes");
 const languageRoutes = require("./routes/languageRoutes");
 const submissionRoutes = require("./routes/submissionRoutes");
 const userProblemRoutes = require("./routes/userProblemRoutes");
+const runRoutes = require("./routes/runRoutes");
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use("/api/v1/test-cases", testCaseRoutes);
 app.use("/api/v1/languages", languageRoutes);
 app.use("/api/v1/submissions", submissionRoutes);
 app.use("/api/v1/user-problems", userProblemRoutes);
+app.use("/api/v1/run", runRoutes);
 
 const PORT = process.env.PORT || 5000;
 

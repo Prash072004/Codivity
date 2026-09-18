@@ -125,21 +125,25 @@ int main() {
         try {
             onResult(null);
 
-            console.log("Code:", code);
-            console.log("Language ID:", languageId);
-            console.log("Examples:", examples);
-
-            // Actual code execution will be added later.
-            onResult({
-                status: "Ready to Run",
-                message: "Code execution engine is not connected yet."
+            const response = await api.post("/run", {
+                problemId,
+                languageId,
+                code
             });
 
+            onResult(response.data);
+
         } catch (error) {
-            console.error("Run failed:", error);
+            console.error(
+                "Run failed:",
+                error.response?.data || error.message
+            );
 
             onResult({
-                status: "Run Failed"
+                status: "Run Failed",
+                message:
+                    error.response?.data?.message ||
+                    "Failed to execute code."
             });
         }
     };
