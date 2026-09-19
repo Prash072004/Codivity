@@ -1,21 +1,34 @@
+import { useEffect, useState } from "react";
+import api from "../services/api";
+
 export function DifficultyBreakdown() {
-    const difficulty = [
-        {
-            name: "Easy",
-            solved: 46,
-            total: 100
-        },
-        {
-            name: "Medium",
-            solved: 40,
-            total: 100
-        },
-        {
-            name: "Hard",
-            solved: 67,
-            total: 100
-        }
-    ];
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        const fetchDifficultyStats = async () => {
+            try {
+                const response = await api.get("/profile/difficulty");
+                setStats(response.data.difficulty);
+            } catch (requestError) {
+                setError(
+                    requestError.response?.data?.message ||
+                    "Failed to load difficulty statistics."
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDifficultyStats();
+    }, []);
+
+    const difficulty = ["Easy", "Medium", "Hard"].map((name) => ({
+        name,
+        solved: stats?.[name]?.solved || 0,
+        total: stats?.[name]?.total || 0
+    }));
 
     const totalSolved = difficulty.reduce(
         (sum, item) => sum + item.solved,
@@ -27,9 +40,9 @@ export function DifficultyBreakdown() {
         0
     );
 
-    const percentage = Math.round(
-        (totalSolved / totalProblems) * 100
-    );
+    const percentage = totalProblems > 0
+        ? Math.round((totalSolved / totalProblems) * 100)
+        : 0;
 
     return (
         <div
@@ -67,10 +80,17 @@ export function DifficultyBreakdown() {
                 </span>
             </div>
 
-            {/* Difficulty Rows */}
-            {difficulty.map((item) => {
+            {loading && (
+                <div style={{ fontSize: "11px" }}>Loading difficulty...</div>
+            )}
+
+            {!loading && error && (
+                <div style={{ fontSize: "11px" }}>{error}</div>
+            )}
+
+            {!loading && !error && difficulty.map((item) => {
                 const progress = Math.round(
-                    (item.solved / item.total) * 100
+                    item.total > 0 ? (item.solved / item.total) * 100 : 0
                 );
 
                 return (
@@ -82,13 +102,7 @@ export function DifficultyBreakdown() {
                     >
                         {/* Label */}
                         <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                fontSize: "11px",
-                                marginBottom: "4px"
-                            }}
-                        >
+                            style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "4px" }}>
                             <span>{item.name}</span>
 
                             <span>

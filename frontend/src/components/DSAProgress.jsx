@@ -1,41 +1,28 @@
+import { useEffect, useState } from "react";
+import api from "../services/api";
+
 export function DSAProgress() {
-    const topics = [
-        {
-            name: "Arrays",
-            solved: 32,
-            total: 50
-        },
-        {
-            name: "Strings",
-            solved: 24,
-            total: 40
-        },
-        {
-            name: "Two Pointers",
-            solved: 16,
-            total: 28
-        },
-        {
-            name: "Linked Lists",
-            solved: 18,
-            total: 30
-        },
-        {
-            name: "Trees",
-            solved: 21,
-            total: 35
-        },
-        {
-            name: "Graphs",
-            solved: 14,
-            total: 30
-        },
-        {
-            name: "Dynamic Programming",
-            solved: 12,
-            total: 40
-        }
-    ];
+    const [topics, setTopics] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        const fetchProgress = async () => {
+            try {
+                const response = await api.get("/profile/dsa-progress");
+                setTopics(response.data.progress || []);
+            } catch (requestError) {
+                setError(
+                    requestError.response?.data?.message ||
+                    "Failed to load DSA progress."
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProgress();
+    }, []);
 
     return (
         <div
@@ -57,10 +44,21 @@ export function DSAProgress() {
                 DSA Progress
             </div>
 
-            {/* Topics */}
-            {topics.map((topic) => {
+            {loading && (
+                <div style={{ fontSize: "11px" }}>Loading DSA progress...</div>
+            )}
+
+            {!loading && error && (
+                <div style={{ fontSize: "11px" }}>{error}</div>
+            )}
+
+            {!loading && !error && topics.length === 0 && (
+                <div style={{ fontSize: "11px" }}>No topic progress yet.</div>
+            )}
+
+            {!loading && !error && topics.map((topic) => {
                 const progress = Math.round(
-                    (topic.solved / topic.total) * 100
+                    topic.total > 0 ? (topic.solved / topic.total) * 100 : 0
                 );
 
                 return (

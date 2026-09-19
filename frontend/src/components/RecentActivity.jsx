@@ -24,11 +24,12 @@ export function RecentActivity() {
         fetchSubmissions();
     }, []);
 
-    const formatDate = (date) => new Date(date).toLocaleDateString("en-US", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-    });
+    const formatDate = (date) =>
+        new Date(date).toLocaleDateString("en-US", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        });
 
     return (
         <div
@@ -72,85 +73,144 @@ export function RecentActivity() {
                 </button>
             </div>
 
-            {loading && <div style={{ fontSize: "11px" }}>Loading recent activity...</div>}
-
-            {!loading && error && <div style={{ fontSize: "11px" }}>{error}</div>}
-
-            {!loading && !error && submissions.length === 0 && (
-                <div style={{ fontSize: "11px" }}>No submissions yet.</div>
+            {loading && (
+                <div style={{ fontSize: "11px" }}>
+                    Loading recent activity...
+                </div>
             )}
 
-            {!loading && !error && submissions.length > 0 && <div style={{ overflowX: "auto" }}>
-                <div style={{ display: "flex", minWidth: "420px", paddingBottom: "5px", color: "#888", fontSize: "9px" }}>
-                    <div style={{ flex: 1 }}>Problem</div>
-                    <div style={{ width: "92px" }}>Result</div>
-                    <div style={{ width: "62px" }}>Language</div>
-                    <div style={{ width: "48px", textAlign: "right" }}>Time</div>
-                    <div style={{ width: "72px", textAlign: "right" }}>Date</div>
+            {!loading && error && (
+                <div style={{ fontSize: "11px" }}>
+                    {error}
                 </div>
-                <div style={{ minWidth: "420px" }}>
-                {submissions.map((submission, index) => (
+            )}
+
+            {!loading && !error && submissions.length === 0 && (
+                <div style={{ fontSize: "11px" }}>
+                    No submissions yet.
+                </div>
+            )}
+
+            {!loading && !error && submissions.length > 0 && (
+                <div style={{ overflowX: "auto" }}>
+                    {/* Table Header */}
                     <div
-                        key={index}
                         style={{
                             display: "flex",
-                            alignItems: "center",
-                            padding: "9px 0",
-
-                            borderTop:
-                                index !== 0
-                                    ? "1px solid #333"
-                                    : "none"
+                            minWidth: "420px",
+                            paddingBottom: "5px",
+                            color: "#888",
+                            fontSize: "9px"
                         }}
                     >
-                        {/* Problem */}
-                        <div
-                            style={{
-                                flex: 1,
-                                fontSize: "12px",
-                                fontWeight: "500"
-                            }}
-                        >
-                            {submission.problemId?.title || "Unknown problem"}
-                        </div>
-
-                        <div
-                            style={{
-                                width: "92px",
-                                fontSize: "10px"
-                            }}
-                        >
-                            {submission.status}
-                        </div>
-
-                        <div
-                            style={{
-                                width: "62px",
-                                fontSize: "10px",
-                                color: "#bbb"
-                            }}
-                        >
-                            {submission.languageId?.name || "-"}
-                        </div>
-
+                        <div style={{ flex: 1 }}>Problem</div>
+                        <div style={{ width: "92px" }}>Result</div>
+                        <div style={{ width: "62px" }}>Language</div>
                         <div
                             style={{
                                 width: "48px",
-                                textAlign: "right",
-                                fontSize: "10px",
-                                color: "#aaa"
+                                textAlign: "right"
                             }}
                         >
-                            {Number.isFinite(submission.runtime) ? `${submission.runtime}ms` : "-"}
+                            Time
                         </div>
-
-                        <div style={{ width: "72px", textAlign: "right", fontSize: "10px", color: "#aaa" }}>
-                            {formatDate(submission.createdAt)}
+                        <div
+                            style={{
+                                width: "72px",
+                                textAlign: "right"
+                            }}
+                        >
+                            Date
                         </div>
                     </div>
-                ))}
+
+                    {/* Scrollable Activity List */}
+                    <div
+                        style={{
+                            maxHeight: "190px",
+                            overflowY: "auto",
+                            overflowX: "hidden",
+                            minWidth: "420px",
+                            paddingRight: "4px",
+                            boxSizing: "border-box"
+                        }}
+                    >
+                        {submissions.map((submission, index) => (
+                            <div
+                                key={submission._id || index}
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    padding: "9px 0",
+                                    borderTop:
+                                        index !== 0
+                                            ? "1px solid #333"
+                                            : "none"
+                                }}
+                            >
+                                {/* Problem */}
+                                <div
+                                    style={{
+                                        flex: 1,
+                                        fontSize: "12px",
+                                        fontWeight: "500"
+                                    }}
+                                >
+                                    {submission.problemId?.title ||
+                                        "Unknown problem"}
+                                </div>
+
+                                {/* Result */}
+                                <div
+                                    style={{
+                                        width: "92px",
+                                        fontSize: "10px"
+                                    }}
+                                >
+                                    {submission.status}
+                                </div>
+
+                                {/* Language */}
+                                <div
+                                    style={{
+                                        width: "62px",
+                                        fontSize: "10px",
+                                        color: "#bbb"
+                                    }}
+                                >
+                                    {submission.languageId?.name || "-"}
+                                </div>
+
+                                {/* Runtime */}
+                                <div
+                                    style={{
+                                        width: "48px",
+                                        textAlign: "right",
+                                        fontSize: "10px",
+                                        color: "#aaa"
+                                    }}
+                                >
+                                    {Number.isFinite(submission.runtime)
+                                        ? `${submission.runtime}ms`
+                                        : "-"}
+                                </div>
+
+                                {/* Date */}
+                                <div
+                                    style={{
+                                        width: "72px",
+                                        textAlign: "right",
+                                        fontSize: "10px",
+                                        color: "#aaa"
+                                    }}
+                                >
+                                    {formatDate(submission.createdAt)}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>}
+            )}
         </div>
     );
 }

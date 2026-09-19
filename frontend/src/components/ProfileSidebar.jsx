@@ -38,9 +38,7 @@ export function ProfileSidebar() {
     ];
 
     return (
-        <div style={{ display: "flex",
-flexDirection: "column",
-alignSelf: "stretch", width: "160px", border: "1px solid white", padding: "6px 0", boxSizing: "border-box", flex: "0 0 160px" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignSelf: "stretch", width: "160px", border: "1px solid white", padding: "6px 0", boxSizing: "border-box", flex: "0 0 160px" }}>
 
             {items.map((item, index) => (
                 <NavLink
