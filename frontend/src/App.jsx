@@ -10,6 +10,7 @@ import { Signup } from "./pages/Signup";
 import { CreateSheet } from "./pages/CreateSheet";
 import { Profile } from "./pages/Profile";
 import { Problem } from "./pages/Problem";
+import { Submissions } from "./pages/Submissions";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/create-sheet" element={<CreateSheet/>} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/submissions" element={<Submissions />} />
         <Route path="/problem/:slug" element={<Problem />} />
       </Routes>
     </BrowserRouter>

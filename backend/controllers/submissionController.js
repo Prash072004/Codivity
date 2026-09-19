@@ -74,11 +74,17 @@ async function getMySubmissions(req, res) {
         const filters = {
             userId: req.user.userId
         };
+        const requestedPage = Number.parseInt(req.query.page, 10);
         const requestedLimit = Number.parseInt(req.query.limit, 10);
         const fromDate = req.query.from ? new Date(req.query.from) : null;
-        const limit = Number.isFinite(requestedLimit)
-            ? Math.min(Math.max(requestedLimit, 1), 365)
+        const page = Number.isFinite(requestedPage)
+            ? Math.max(requestedPage, 1)
             : null;
+        const limit = Number.isFinite(requestedLimit)
+            ? Math.min(Math.max(requestedLimit, 1), 100)
+            : page
+                ? 10
+                : null;
 
         if (fromDate && !Number.isNaN(fromDate.getTime())) {
             filters.createdAt = { $gte: fromDate };
@@ -91,13 +97,28 @@ async function getMySubmissions(req, res) {
             .sort({ createdAt: -1 });
 
         if (limit) {
+            if (page) {
+                query.skip((page - 1) * limit);
+            }
+
             query.limit(limit);
         }
 
-        const submissions = await query;
+        const [submissions, total] = await Promise.all([
+            query,
+            page ? Submission.countDocuments(filters) : Promise.resolve(null)
+        ]);
 
         return res.status(200).json({
-            submissions
+            submissions,
+            ...(page && {
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit)
+                }
+            })
         });
 
     } catch (error) {

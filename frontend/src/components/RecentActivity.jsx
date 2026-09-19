@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import api from "../services/api";
 
 export function RecentActivity() {
+    const navigate = useNavigate();
     const [submissions, setSubmissions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -59,6 +61,8 @@ export function RecentActivity() {
                 </div>
 
                 <button
+                    type="button"
+                    onClick={() => navigate("/submissions")}
                     style={{
                         backgroundColor: "black",
                         color: "white",
