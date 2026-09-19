@@ -2,6 +2,7 @@ const Problem = require("../models/Problem.js");
 const TestCase = require("../models/TestCase.js");
 const Language = require("../models/Language.js");
 const { executeCode } = require("../services/executionService.js");
+const { judgeExecution } = require("../services/judgeService.js");
 
 async function runCode(req, res) {
     try {
@@ -46,6 +47,7 @@ async function runCode(req, res) {
         }
 
         const results = [];
+        let overallStatus = "Accepted";
 
         for (const [index, testCase] of testCases.entries()) {
             const executionResult = await executeCode({
@@ -59,17 +61,28 @@ async function runCode(req, res) {
                 }
             });
 
+            const status = executionResult.status === "EXECUTED"
+                ? judgeExecution({
+                    executionResult,
+                    expectedOutput: testCase.expectedOutput
+                }).status
+                : executionResult.status;
+
             results.push({
                 testCase: index + 1,
                 testCaseId: testCase._id.toString(),
                 input: testCase.input,
                 expectedOutput: testCase.expectedOutput,
                 actualOutput: executionResult.stdout,
-                status: executionResult.status,
+                status,
                 stderr: executionResult.stderr,
                 runtime: executionResult.runtime,
                 exitCode: executionResult.exitCode
             });
+
+            if (status !== "Accepted") {
+                overallStatus = status;
+            }
 
             if (
                 executionResult.status === "COMPILATION_ERROR" ||
@@ -83,7 +96,7 @@ async function runCode(req, res) {
         }
 
         return res.status(200).json({
-            status: "Run Completed",
+            status: overallStatus,
             message: "Code executed successfully",
             results
         });

@@ -4,7 +4,7 @@ import api from "../services/api";
 import { Navbar } from "../components/Navbar";
 import { ProblemStatement } from "../components/ProblemStatement";
 import { CodeEditor } from "../components/CodeEditor";
-import { Check, CheckCircle2, Circle, CircleX, Copy } from "lucide-react";
+import { Check, CheckCircle2, CircleX, Copy } from "lucide-react";
 
 export function Problem() {
     const { slug } = useParams();
@@ -113,7 +113,7 @@ export function Problem() {
                                 const result = results[selectedRunCase] || results[0];
                                 const runtimeValues = results.map((item) => item.runtime).filter((value) => Number.isFinite(value));
                                 const totalRuntime = runtimeValues.length > 0 ? Math.max(...runtimeValues) : null;
-                                const successful = result.status === "EXECUTED";
+                                const successful = submissionResult.status === "Accepted";
                                 const copyBox = (label, field, value) => (
                                     <div style={{ marginTop: "16px" }}>
                                         <div style={{ fontSize: "12px", color: "#bbb", marginBottom: "6px" }}>{label}</div>
@@ -137,15 +137,15 @@ export function Problem() {
 
                                         <div style={{ display: "flex", alignItems: "center", gap: "8px", color: successful ? "#76d275" : "#f08080", fontSize: "16px", fontWeight: "600", marginBottom: "16px" }}>
                                             {successful ? <CheckCircle2 size={20} /> : <CircleX size={20} />}
-                                            {successful ? "Executed" : result.status}
+                                            {submissionResult.status}
                                         </div>
 
                                         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "6px" }}>
                                             {results.map((item, index) => {
-                                                const itemSuccessful = item.status === "EXECUTED";
+                                                const itemSuccessful = item.status === "Accepted";
                                                 return (
                                                     <button key={item.testCaseId} type="button" onClick={() => setSelectedRunCase(index)} style={{ display: "flex", alignItems: "center", gap: "5px", backgroundColor: selectedRunCase === index ? "#222" : "black", color: itemSuccessful ? "#76d275" : "#f08080", border: selectedRunCase === index ? "1px solid white" : "1px solid #444", borderRadius: "4px", padding: "6px 9px", cursor: "pointer", fontSize: "11px" }}>
-                                                        {itemSuccessful ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+                                                        {itemSuccessful ? <CheckCircle2 size={14} /> : <CircleX size={14} />}
                                                         Case {item.testCase}
                                                     </button>
                                                 );
