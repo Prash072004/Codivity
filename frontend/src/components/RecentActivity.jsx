@@ -1,41 +1,34 @@
+import { useEffect, useState } from "react";
+import api from "../services/api";
+
 export function RecentActivity() {
-    const activities = [
-        {
-            problem: "Two Sum",
-            status: "Accepted",
-            language: "C++",
-            duration: "42ms",
-            date: "Today"
-        },
-        {
-            problem: "Binary Search",
-            status: "Accepted",
-            language: "C++",
-            duration: "38ms",
-            date: "Yesterday"
-        },
-        {
-            problem: "Longest Substring",
-            status: "Accepted",
-            language: "Python",
-            duration: "61ms",
-            date: "18 Sep"
-        },
-        {
-            problem: "Merge Intervals",
-            status: "Wrong Answer",
-            language: "C++",
-            duration: "0ms",
-            date: "17 Sep"
-        },
-        {
-            problem: "Trapping Rain Water",
-            status: "Accepted",
-            language: "JavaScript",
-            duration: "55ms",
-            date: "16 Sep"
-        }
-    ];
+    const [submissions, setSubmissions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        const fetchSubmissions = async () => {
+            try {
+                const response = await api.get("/submissions/my?limit=5");
+                setSubmissions(response.data.submissions || []);
+            } catch (requestError) {
+                setError(
+                    requestError.response?.data?.message ||
+                    "Failed to load recent activity."
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSubmissions();
+    }, []);
+
+    const formatDate = (date) => new Date(date).toLocaleDateString("en-US", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    });
 
     return (
         <div
@@ -79,8 +72,15 @@ export function RecentActivity() {
                 </button>
             </div>
 
-            {/* Activity List */}
-            <div style={{ overflowX: "auto" }}>
+            {loading && <div style={{ fontSize: "11px" }}>Loading recent activity...</div>}
+
+            {!loading && error && <div style={{ fontSize: "11px" }}>{error}</div>}
+
+            {!loading && !error && submissions.length === 0 && (
+                <div style={{ fontSize: "11px" }}>No submissions yet.</div>
+            )}
+
+            {!loading && !error && submissions.length > 0 && <div style={{ overflowX: "auto" }}>
                 <div style={{ display: "flex", minWidth: "420px", paddingBottom: "5px", color: "#888", fontSize: "9px" }}>
                     <div style={{ flex: 1 }}>Problem</div>
                     <div style={{ width: "92px" }}>Result</div>
@@ -89,7 +89,7 @@ export function RecentActivity() {
                     <div style={{ width: "72px", textAlign: "right" }}>Date</div>
                 </div>
                 <div style={{ minWidth: "420px" }}>
-                {activities.map((activity, index) => (
+                {submissions.map((submission, index) => (
                     <div
                         key={index}
                         style={{
@@ -111,7 +111,7 @@ export function RecentActivity() {
                                 fontWeight: "500"
                             }}
                         >
-                            {activity.problem}
+                            {submission.problemId?.title || "Unknown problem"}
                         </div>
 
                         <div
@@ -120,7 +120,7 @@ export function RecentActivity() {
                                 fontSize: "10px"
                             }}
                         >
-                            {activity.status}
+                            {submission.status}
                         </div>
 
                         <div
@@ -130,7 +130,7 @@ export function RecentActivity() {
                                 color: "#bbb"
                             }}
                         >
-                            {activity.language}
+                            {submission.languageId?.name || "-"}
                         </div>
 
                         <div
@@ -141,16 +141,16 @@ export function RecentActivity() {
                                 color: "#aaa"
                             }}
                         >
-                            {activity.duration}
+                            {Number.isFinite(submission.runtime) ? `${submission.runtime}ms` : "-"}
                         </div>
 
                         <div style={{ width: "72px", textAlign: "right", fontSize: "10px", color: "#aaa" }}>
-                            {activity.date}
+                            {formatDate(submission.createdAt)}
                         </div>
                     </div>
                 ))}
                 </div>
-            </div>
+            </div>}
         </div>
     );
 }

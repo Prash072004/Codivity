@@ -1,17 +1,71 @@
-const activity = Array.from(
-    { length: 364 },
-    (_, index) => (index * 17 + Math.floor(index / 7) * 3) % 5
-);
+import { useEffect, useState } from "react";
+import api from "../services/api";
 
 export function SubmissionActivity() {
+    const [range, setRange] = useState("year");
+    const [submissions, setSubmissions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    const getActivityColor = (level) => {
-        if (level === 0) return "black";
-        if (level === 1) return "#333";
-        if (level === 2) return "#666";
-        if (level === 3) return "#999";
+    useEffect(() => {
+        const fetchActivity = async () => {
+            const days = range === "month" ? 30 : range === "week" ? 7 : 365;
+            const from = new Date();
+            from.setHours(0, 0, 0, 0);
+            from.setDate(from.getDate() - (days - 1));
+
+            setLoading(true);
+            setError("");
+
+            try {
+                const response = await api.get(
+                    `/submissions/my?from=${encodeURIComponent(from.toISOString())}`
+                );
+                setSubmissions(response.data.submissions || []);
+            } catch (requestError) {
+                setError(
+                    requestError.response?.data?.message ||
+                    "Failed to load submission activity."
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchActivity();
+    }, [range]);
+
+    const days = range === "month" ? 30 : range === "week" ? 7 : 365;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const activityDays = Array.from({ length: days }, (_, index) => {
+        const date = new Date(today);
+        date.setDate(today.getDate() - (days - index - 1));
+        return date;
+    });
+
+    const getDateKey = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    };
+
+    const counts = submissions.reduce((result, submission) => {
+        const key = getDateKey(new Date(submission.createdAt));
+        result[key] = (result[key] || 0) + 1;
+        return result;
+    }, {});
+
+    const getActivityColor = (count) => {
+        if (count === 0) return "black";
+        if (count === 1) return "#333";
+        if (count === 2) return "#666";
+        if (count === 3) return "#999";
         return "white";
     };
+
+    const activeDays = Object.keys(counts).length;
 
     return (
         <div
@@ -47,7 +101,7 @@ export function SubmissionActivity() {
                             marginTop: "2px"
                         }}
                     >
-                        Demo activity data · 329 submissions in the past year
+                        Actual submission activity
                     </div>
                 </div>
 
@@ -63,21 +117,18 @@ export function SubmissionActivity() {
                     }}
                 >
                     <div>
-                        12
-                        <div>Current streak</div>
+                        {submissions.length}
+                        <div>Total submissions</div>
                     </div>
 
                     <div>
-                        170
+                        {activeDays}
                         <div>Total active days</div>
                     </div>
 
-                    <div>
-                        15
-                        <div>Max streak</div>
-                    </div>
-
                     <select
+                        value={range}
+                        onChange={(event) => setRange(event.target.value)}
                         style={{
                             backgroundColor: "black",
                             color: "white",
@@ -85,15 +136,18 @@ export function SubmissionActivity() {
                             fontSize: "9px"
                         }}
                     >
-                        <option>Past year</option>
-                        <option>Past month</option>
-                        <option>Past week</option>
+                        <option value="year">Past year</option>
+                        <option value="month">Past month</option>
+                        <option value="week">Past week</option>
                     </select>
                 </div>
             </div>
 
-            {/* Heatmap */}
-            <div
+            {loading && <div style={{ fontSize: "11px" }}>Loading submission activity...</div>}
+
+            {!loading && error && <div style={{ fontSize: "11px" }}>{error}</div>}
+
+            {!loading && !error && <div
                 style={{
                     overflowX: "auto",
                     paddingBottom: "5px"
@@ -109,22 +163,26 @@ export function SubmissionActivity() {
                         width: "max-content"
                     }}
                 >
-                    {activity.map((level, index) => (
+                    {activityDays.map((date) => {
+                        const count = counts[getDateKey(date)] || 0;
+
+                        return (
                         <div
-                            key={index}
-                            title={`${level} submissions`}
+                            key={getDateKey(date)}
+                            title={`${count} submissions`}
                             style={{
                                 width: "10px",
                                 height: "10px",
                                 backgroundColor:
-                                    getActivityColor(level),
+                                    getActivityColor(count),
                                 border: "1px solid #444",
                                 boxSizing: "border-box"
                             }}
                         />
-                    ))}
+                        );
+                    })}
                 </div>
-            </div>
+            </div>}
 
             {/* Footer */}
             <div

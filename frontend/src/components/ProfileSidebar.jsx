@@ -1,7 +1,14 @@
-import { NavLink } from "react-router";
-import { User, FileCheckCorner, Trophy, Sheet, Settings } from "lucide-react";
+import { NavLink, useNavigate } from "react-router";
+import { User, FileCheckCorner, Trophy, Sheet, Settings, LogOut } from "lucide-react";
 
 export function ProfileSidebar() {
+    const navigate = useNavigate();
+
+    const handleSignOut = () => {
+        localStorage.removeItem("token");
+        navigate("/signin");
+    };
+
     const items = [
         {
             label: "Profile",
@@ -31,34 +38,24 @@ export function ProfileSidebar() {
     ];
 
     return (
-        <div style={{ width: "160px", border: "1px solid white", padding: "6px 0", boxSizing: "border-box", flex: "0 0 160px" }}>
-            
+        <div style={{ display: "flex",
+flexDirection: "column",
+alignSelf: "stretch", width: "160px", border: "1px solid white", padding: "6px 0", boxSizing: "border-box", flex: "0 0 160px" }}>
+
             {items.map((item, index) => (
                 <NavLink
                     key={item.label}
                     to={item.path}
-                    style={({ isActive }) => ({
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-
-                        padding: "11px 10px",
-
+                    style={({ isActive }) => ({ display: "flex", alignItems: "center", gap: "8px", padding: "11px 10px", 
                         color: isActive ? "black" : "white",
                         backgroundColor: isActive ? "white" : "black",
-
                         textDecoration: "none",
-
                         borderBottom:
                             index !== items.length - 1
                                 ? "1px solid white"
                                 : "none",
 
-                        fontSize: "13px",
-
-                        boxSizing: "border-box"
-                    })}
-                >
+                        fontSize: "13px", boxSizing: "border-box" })}>
                     <span
                         style={{
                             width: "18px",
@@ -75,6 +72,16 @@ export function ProfileSidebar() {
                     </span>
                 </NavLink>
             ))}
+
+            <button
+                type="button"
+                onClick={handleSignOut}
+                style={{marginTop: "auto", borderTop: "1px solid white", display: "flex", alignItems: "center", gap: "8px", width: "100%", padding: "11px 10px", color: "white", backgroundColor: "black", border: "none", fontSize: "13px", textAlign: "left", cursor: "pointer", boxSizing: "border-box" }}>
+                <span style={{ width: "18px", textAlign: "center", flexShrink: 0 }}>
+                    <LogOut size={16} strokeWidth={1.6} />
+                </span>
+                <span>Sign Out</span>
+            </button>
         </div>
     );
 }

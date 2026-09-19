@@ -71,12 +71,30 @@ async function createSubmission(req, res) {
 
 async function getMySubmissions(req, res) {
     try {
-        const submissions = await Submission.find({
+        const filters = {
             userId: req.user.userId
-        })
+        };
+        const requestedLimit = Number.parseInt(req.query.limit, 10);
+        const fromDate = req.query.from ? new Date(req.query.from) : null;
+        const limit = Number.isFinite(requestedLimit)
+            ? Math.min(Math.max(requestedLimit, 1), 365)
+            : null;
+
+        if (fromDate && !Number.isNaN(fromDate.getTime())) {
+            filters.createdAt = { $gte: fromDate };
+        }
+
+        const query = Submission.find(filters)
+            .select("status runtime createdAt problemId languageId")
             .populate("problemId", "title slug difficulty")
             .populate("languageId", "name version")
             .sort({ createdAt: -1 });
+
+        if (limit) {
+            query.limit(limit);
+        }
+
+        const submissions = await query;
 
         return res.status(200).json({
             submissions
