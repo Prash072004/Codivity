@@ -134,7 +134,9 @@ async function getSubmissionById(req, res) {
     try {
         const { id } = req.params;
 
-        const submission = await Submission.findById(id);
+        const submission = await Submission.findById(id).select(
+            "-code"
+        );
 
         if (!submission) {
             return res.status(404).json({

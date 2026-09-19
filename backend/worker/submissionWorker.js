@@ -118,7 +118,9 @@ async function startWorker() {
                 {
                     status: verdict,
                     runtime,
-                    memory
+                    memory,
+                    passedTestCases,
+                    totalTestCases: testCases.length
                 },
                 { runValidators: true }
             );

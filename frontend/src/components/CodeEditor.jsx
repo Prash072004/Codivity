@@ -87,6 +87,7 @@ function highlightCode(source, languageName) {
 export function CodeEditor({ problemId, examples, onResult }) {
     const [languages, setLanguages] = useState([]);
     const [languageId, setLanguageId] = useState("");
+    const [runLoading, setRunLoading] = useState(false);
     const codeScrollRef = useRef(null);
     const highlightedCodeRef = useRef(null);
     const pollTimerRef = useRef(null);
@@ -216,7 +217,8 @@ int main() {
 
     const handleRun = async () => {
         try {
-            onResult(null);
+            setRunLoading(true);
+            onResult({ status: "RUNNING" });
 
             const response = await api.post("/run", {
                 problemId,
@@ -237,7 +239,9 @@ int main() {
                 message:
                     error.response?.data?.message ||
                     "Failed to execute code."
-            });
+                });
+        } finally {
+            setRunLoading(false);
         }
     };
 
@@ -337,6 +341,7 @@ int main() {
             
             <button
                 onClick={handleRun}
+                disabled={runLoading}
                 style={{ padding: "7px 25px", borderRadius: "15px", border: "none", cursor: "pointer"}}
             >
                 Run

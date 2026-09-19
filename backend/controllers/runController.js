@@ -47,7 +47,7 @@ async function runCode(req, res) {
 
         const results = [];
 
-        for (const testCase of testCases) {
+        for (const [index, testCase] of testCases.entries()) {
             const executionResult = await executeCode({
                 language,
                 sourceCode: code,
@@ -60,8 +60,15 @@ async function runCode(req, res) {
             });
 
             results.push({
+                testCase: index + 1,
                 testCaseId: testCase._id.toString(),
-                executionResult
+                input: testCase.input,
+                expectedOutput: testCase.expectedOutput,
+                actualOutput: executionResult.stdout,
+                status: executionResult.status,
+                stderr: executionResult.stderr,
+                runtime: executionResult.runtime,
+                exitCode: executionResult.exitCode
             });
 
             if (
