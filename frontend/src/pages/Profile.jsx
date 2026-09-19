@@ -107,39 +107,22 @@ export function Profile() {
             
             <Navbar showAuth={false} />
 
-            {/* Profile Section */}
-            <div style={{ display: "flex", gap: "10px", marginTop: "10px", border: "1px solid white", padding: "10px", boxSizing: "border-box" }}>
-                
-                {/* Sidebar */}
+            <div style={{ display: "flex", gap: "10px", marginTop: "10px", border: "1px solid white", padding: "10px", boxSizing: "border-box", alignItems: "flex-start", flexWrap: "wrap" }}>
                 <ProfileSidebar />
 
-                {/* Main Content */}
-                <div style={{ display: "flex", flexDirection: "row", gap: "10px", flex: 1, minWidth: 0 }}>                    
-                    
-                    {/* User & Activity Section */}
-                    <div style={{ flex: 1, minWidth: 0 }}> 
-                        
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(220px, 260px)", gap: "10px", flex: "1 1 620px", minWidth: 0 }}>
+                    <div style={{ minWidth: 0 }}>
                         <ProfileHeader user={user} />
-                    
                         <SubmissionActivity />
-
                         <RecentActivity />
-
                     </div>
-                
-                    {/* Progress Section */}
-                    <div style={{display: "flex", flexDirection: "column", gap: "10px", width: "260px"}}>
-                    
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", minWidth: 0 }}>
                         <DifficultyBreakdown />
-                        
                         <DSAProgress />
-                    
                     </div>
                 </div>
-                
             </div>
-
-            
         </div>
     );
 }

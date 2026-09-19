@@ -2,33 +2,38 @@ export function RecentActivity() {
     const activities = [
         {
             problem: "Two Sum",
-            difficulty: "Easy",
             status: "Accepted",
-            time: "2h ago"
+            language: "C++",
+            duration: "42ms",
+            date: "Today"
         },
         {
             problem: "Binary Search",
-            difficulty: "Easy",
             status: "Accepted",
-            time: "5h ago"
+            language: "C++",
+            duration: "38ms",
+            date: "Yesterday"
         },
         {
             problem: "Longest Substring",
-            difficulty: "Medium",
             status: "Accepted",
-            time: "1d ago"
+            language: "Python",
+            duration: "61ms",
+            date: "18 Sep"
         },
         {
             problem: "Merge Intervals",
-            difficulty: "Medium",
             status: "Wrong Answer",
-            time: "2d ago"
+            language: "C++",
+            duration: "0ms",
+            date: "17 Sep"
         },
         {
             problem: "Trapping Rain Water",
-            difficulty: "Hard",
             status: "Accepted",
-            time: "3d ago"
+            language: "JavaScript",
+            duration: "55ms",
+            date: "16 Sep"
         }
     ];
 
@@ -75,7 +80,15 @@ export function RecentActivity() {
             </div>
 
             {/* Activity List */}
-            <div>
+            <div style={{ overflowX: "auto" }}>
+                <div style={{ display: "flex", minWidth: "420px", paddingBottom: "5px", color: "#888", fontSize: "9px" }}>
+                    <div style={{ flex: 1 }}>Problem</div>
+                    <div style={{ width: "92px" }}>Result</div>
+                    <div style={{ width: "62px" }}>Language</div>
+                    <div style={{ width: "48px", textAlign: "right" }}>Time</div>
+                    <div style={{ width: "72px", textAlign: "right" }}>Date</div>
+                </div>
+                <div style={{ minWidth: "420px" }}>
                 {activities.map((activity, index) => (
                     <div
                         key={index}
@@ -101,44 +114,42 @@ export function RecentActivity() {
                             {activity.problem}
                         </div>
 
-                        {/* Difficulty */}
                         <div
                             style={{
-                                width: "65px",
+                                width: "92px",
                                 fontSize: "10px"
-                            }}
-                        >
-                            {activity.difficulty}
-                        </div>
-
-                        {/* Status */}
-                        <div
-                            style={{
-                                width: "85px",
-                                fontSize: "10px",
-                                fontWeight: "500",
-                                color:
-                                    activity.status === "Accepted"
-                                        ? "white"
-                                        : "#999"
                             }}
                         >
                             {activity.status}
                         </div>
 
-                        {/* Time */}
                         <div
                             style={{
-                                width: "50px",
+                                width: "62px",
+                                fontSize: "10px",
+                                color: "#bbb"
+                            }}
+                        >
+                            {activity.language}
+                        </div>
+
+                        <div
+                            style={{
+                                width: "48px",
                                 textAlign: "right",
                                 fontSize: "10px",
                                 color: "#aaa"
                             }}
                         >
-                            {activity.time}
+                            {activity.duration}
+                        </div>
+
+                        <div style={{ width: "72px", textAlign: "right", fontSize: "10px", color: "#aaa" }}>
+                            {activity.date}
                         </div>
                     </div>
                 ))}
+                </div>
             </div>
         </div>
     );

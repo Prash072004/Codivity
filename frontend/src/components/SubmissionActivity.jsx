@@ -1,9 +1,9 @@
+const activity = Array.from(
+    { length: 364 },
+    (_, index) => (index * 17 + Math.floor(index / 7) * 3) % 5
+);
+
 export function SubmissionActivity() {
-    // Dummy activity data
-    const activity = Array.from(
-        { length: 364 },
-        () => Math.floor(Math.random() * 5)
-    );
 
     const getActivityColor = (level) => {
         if (level === 0) return "black";
@@ -47,7 +47,7 @@ export function SubmissionActivity() {
                             marginTop: "2px"
                         }}
                     >
-                        329 submissions in the past year
+                        Demo activity data · 329 submissions in the past year
                     </div>
                 </div>
 
@@ -55,22 +55,25 @@ export function SubmissionActivity() {
                 <div
                     style={{
                         display: "flex",
-                        gap: "15px",
-                        fontSize: "9px"
+                        gap: "12px",
+                        fontSize: "9px",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        justifyContent: "flex-end"
                     }}
                 >
                     <div>
-                        🔥 12
+                        12
                         <div>Current streak</div>
                     </div>
 
                     <div>
-                        ▣ 170
+                        170
                         <div>Total active days</div>
                     </div>
 
                     <div>
-                        ⚡ 15
+                        15
                         <div>Max streak</div>
                     </div>
 

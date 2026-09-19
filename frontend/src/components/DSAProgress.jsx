@@ -11,6 +11,11 @@ export function DSAProgress() {
             total: 40
         },
         {
+            name: "Two Pointers",
+            solved: 16,
+            total: 28
+        },
+        {
             name: "Linked Lists",
             solved: 18,
             total: 30

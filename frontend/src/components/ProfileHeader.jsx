@@ -8,31 +8,31 @@ export function ProfileHeader({ user }) {
     }) : "";
 
     return (
-        <div style={{ border: "1px solid white", padding: "10px", display: "flex", alignItems: "center", boxSizing: "border-box", minHeight: "68px" }}>
+        <div style={{ border: "1px solid white", padding: "16px", display: "flex", alignItems: "center", boxSizing: "border-box", minHeight: "116px", gap: "12px" }}>
             
             {/* Avatar */}
-            <div style={{ width: "50px", height: "50px", border: "1px solid white", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0}}>
+            <div style={{ width: "64px", height: "64px", border: "1px solid white", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>
                 {username.charAt(0).toUpperCase()}
             </div>
 
             {/* User Information */}
-            <div style={{ marginLeft: "10px", lineHeight: "1.2" }}>
+            <div style={{ lineHeight: "1.35", minWidth: 0 }}>
                 
-                <div style={{ fontSize: "14px", fontWeight: "600" }}>
+                <div style={{ fontSize: "18px", fontWeight: "600" }}>
                     {username}
                 </div>
 
                 {/* Handle */}
-                <div style={{ fontSize: "12px" }}>
+                <div style={{ fontSize: "12px", color: "#bbb" }}>
                     @{username}
                 </div>
 
                 {/* Joined Date */}
-                <div style={{ fontSize: "11px"}}>
+                <div style={{ fontSize: "11px", marginTop: "5px" }}>
                     Joined {joinedDate}
                 </div>
 
-                <div style={{ fontSize: "11px", fontStyle: "italic", marginTop: "2px" }}>
+                <div style={{ fontSize: "11px", fontStyle: "italic", color: "#aaa", marginTop: "3px" }}>
                     "Consistent practice leads to progress."
                 </div>
 
@@ -45,10 +45,11 @@ export function ProfileHeader({ user }) {
                     backgroundColor: "black",
                     color: "white",
                     border: "1px solid white",
-                    borderRadius: "4px",
-                    padding: "4px 8px",
+                    borderRadius: "2px",
+                    padding: "7px 10px",
                     fontSize: "11px",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    flexShrink: 0
                 }}
             >
                 Edit Profile

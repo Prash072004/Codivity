@@ -1,7 +1,24 @@
 import { Link } from "react-router";
 import { NavLink } from "./NavLink";
+import { useEffect, useState } from "react";
 
 export function Navbar({showAuth = true}) {
+    const [isAuthenticated, setIsAuthenticated] = useState(() =>
+        Boolean(localStorage.getItem("token"))
+    );
+
+    useEffect(() => {
+        const handleStorageChange = () => {
+            setIsAuthenticated(Boolean(localStorage.getItem("token")));
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+
+        return () => {
+            window.removeEventListener("storage", handleStorageChange);
+        };
+    }, []);
+
     return <div style={{display: "flex", alignItems: "center", backgroundColor: "black", color: "white", border: "1px solid white", borderRadius: "8px", padding: "10px 12px"}}>
         {/* Logo */}
         <div>
@@ -18,10 +35,16 @@ export function Navbar({showAuth = true}) {
         </div>
 
         {/* Authentication */}
-        {showAuth && (
+        {showAuth && !isAuthenticated && (
             <div style={{display: "flex", gap: "10px", marginLeft: "auto"}}>
                 <NavLink to="/signin">Login</NavLink>
                 <NavLink to="/signup">Sign Up</NavLink>
+            </div>
+        )}
+
+        {showAuth && isAuthenticated && (
+            <div style={{display: "flex", gap: "10px", marginLeft: "auto"}}>
+                <NavLink to="/profile">Profile</NavLink>
             </div>
         )}
     </div>

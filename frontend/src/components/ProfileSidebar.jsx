@@ -6,43 +6,43 @@ export function ProfileSidebar() {
         {
             label: "Profile",
             path: "/profile",
-            icon: <User />
+            icon: <User size={16} strokeWidth={1.6} />
         },
         {
             label: "Submissions",
             path: "/submissions",
-            icon: <FileCheckCorner />
+            icon: <FileCheckCorner size={16} strokeWidth={1.6} />
         },
         {
             label: "Custom Contests",
             path: "/custom-contests",
-            icon: <Trophy />
+            icon: <Trophy size={16} strokeWidth={1.6} />
         },
         {
             label: "DSA Sheets",
             path: "/sheets",
-            icon: <Sheet />
+            icon: <Sheet size={16} strokeWidth={1.6} />
         },
         {
             label: "Settings",
             path: "/settings",
-            icon: <Settings />
+            icon: <Settings size={16} strokeWidth={1.6} />
         }
     ];
 
     return (
-        <div style={{ width: "160px", border: "1px solid white", padding: "10px 0", boxSizing: "border-box", flexShrink: 0 }}>
+        <div style={{ width: "160px", border: "1px solid white", padding: "6px 0", boxSizing: "border-box", flex: "0 0 160px" }}>
             
             {items.map((item, index) => (
-                               <NavLink
+                <NavLink
                     key={item.label}
                     to={item.path}
                     style={({ isActive }) => ({
                         display: "flex",
                         alignItems: "center",
-                        gap: "10px",
+                        gap: "8px",
 
-                        padding: "10px",
+                        padding: "11px 10px",
 
                         color: isActive ? "black" : "white",
                         backgroundColor: isActive ? "white" : "black",
