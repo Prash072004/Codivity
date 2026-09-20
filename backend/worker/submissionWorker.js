@@ -166,6 +166,7 @@ async function startWorker() {
                     }
                 ],
                 {
+                    dnsLookup: (address, callback) => callback(null, address),
                     redisOptions: {
                         tls: {}
                     }
