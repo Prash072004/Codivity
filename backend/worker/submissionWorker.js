@@ -171,7 +171,8 @@ async function startWorker() {
                         tls: {}
                     }
                 }
-            )
+            ),
+            prefix: "{codivity}"
         }
     );
 
