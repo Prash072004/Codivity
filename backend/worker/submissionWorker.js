@@ -3,7 +3,6 @@ require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const mongoose = require("mongoose");
 const { Worker } = require("bullmq");
-const Redis = require("ioredis");
 const { redisUrl } = require("../redis");
 const Submission = require("../models/Submission.js");
 const Problem = require("../models/Problem.js");
@@ -158,21 +157,9 @@ async function startWorker() {
             return result;
         },
         {
-            connection: new Redis.Cluster(
-                [
-                    {
-                        host: new URL(redisUrl).hostname,
-                        port: 6379
-                    }
-                ],
-                {
-                    dnsLookup: (address, callback) => callback(null, address),
-                    redisOptions: {
-                        tls: {}
-                    }
-                }
-            ),
-            prefix: "{codivity}"
+            connection: {
+                url: redisUrl
+            }
         }
     );
 
