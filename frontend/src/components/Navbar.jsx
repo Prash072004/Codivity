@@ -21,9 +21,11 @@ export function Navbar({showAuth = true}) {
 
     return <div style={{display: "flex", alignItems: "center", backgroundColor: "black", color: "white", border: "1px solid white", borderRadius: "8px", padding: "10px 12px"}}>
         {/* Logo */}
-        <div>
-            <Link to="/" style={{textDecoration: "none", color: "white", fontSize: "20px", fontWeight: "600"}}>Codivity</Link>
-        </div>
+        <Link to="/" className="flex items-center gap-2">
+            <img src="/codivity-logo.png" alt="Codivity"
+                className="h-14 w-auto object-contain"
+            />
+        </Link>
 
         {/* Navigation Links */}
         <div style={{display: "flex", gap: "10px", marginLeft: "120px"}}>
