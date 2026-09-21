@@ -125,24 +125,31 @@ async function startWorker() {
                 { runValidators: true }
             );
 
-            const userProblem = await UserProblem.findOne({
+            let userProblem = await UserProblem.findOne({
                 userId: submission.userId,
                 problemId: submission.problemId
             });
 
-            if (userProblem) {
+            if(!userProblem) {
+                userProblem = new UserProblem({
+                    userId: submission.userId,
+                    problemId: submission.problemId,
+                    status: verdict === "Accepted" ? "Solved" : "Attempted",
+                    solvedAt: verdict === "Accepted" ? new Date() : null
+                });
+            } else { // userProblem already exists in db
                 if (verdict === "Accepted") {
                     userProblem.status = "Solved";
 
                     if (!userProblem.solvedAt) {
                         userProblem.solvedAt = new Date();
                     }
-                } else {
+                } else if (userProblem.status !== "Solved") { // If the problem is not already solved, mark it as attempted
                     userProblem.status = "Attempted";
                 }
-
-                await userProblem.save();
             }
+
+            await userProblem.save();
 
             const result = {
                 submissionId: submission._id.toString(),
