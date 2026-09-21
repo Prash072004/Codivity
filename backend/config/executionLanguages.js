@@ -6,13 +6,10 @@ const executionLanguages = {
         dockerImage: "codivity-cpp-execution:dev",
         sourceFile: "main.cpp",
         shell: "bash",
-
         compileTimeoutMs: 20000,
-
         limits: {
             memoryMb: 512
         },
-
         compile: {
             command: "g++",
             args: ["-std=c++17", "-O2", "main.cpp", "-o", "main"]

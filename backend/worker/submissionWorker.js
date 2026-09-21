@@ -159,7 +159,8 @@ async function startWorker() {
         {
             connection: {
                 url: redisUrl
-            }
+            },
+            prefix: "{codivity}"
         }
     );
 
