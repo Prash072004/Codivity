@@ -1,21 +1,24 @@
 import { Link } from "react-router";
 import { NavLink } from "./NavLink";
 import { useEffect, useState } from "react";
+import api from "../services/api";
 
 export function Navbar({showAuth = true}) {
-    const [isAuthenticated, setIsAuthenticated] = useState(() =>
-        Boolean(localStorage.getItem("token"))
-    );
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
-        const handleStorageChange = () => {
-            setIsAuthenticated(Boolean(localStorage.getItem("token")));
-        };
+        let cancelled = false;
 
-        window.addEventListener("storage", handleStorageChange);
+        api.get("/profile")
+            .then(() => {
+                if (!cancelled) setIsAuthenticated(true);
+            })
+            .catch(() => {
+                if (!cancelled) setIsAuthenticated(false);
+            });
 
         return () => {
-            window.removeEventListener("storage", handleStorageChange);
+            cancelled = true;
         };
     }, []);
 

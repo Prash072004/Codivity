@@ -23,9 +23,11 @@ export function ProblemSet() {
                     const response = await api.get("/problems");
                     setProblems(response.data.problems || []);
 
-                    if (localStorage.getItem("token")) {
+                    try {
                         const progressResponse = await api.get("/user-problems");
                         setUserProgress(progressResponse.data.progress || []);
+                    } catch {
+                        // Unauthenticated users have no progress to show
                     }
                 }
             } catch (err) {

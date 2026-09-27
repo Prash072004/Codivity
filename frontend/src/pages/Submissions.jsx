@@ -14,11 +14,6 @@ export function Submissions() {
 
     useEffect(() => {
         const fetchSubmissions = async () => {
-            if (!localStorage.getItem("token")) {
-                navigate("/signin");
-                return;
-            }
-
             setLoading(true);
             setError("");
 
@@ -30,7 +25,6 @@ export function Submissions() {
                 setPagination(response.data.pagination || null);
             } catch (requestError) {
                 if (requestError.response?.status === 401) {
-                    localStorage.removeItem("token");
                     navigate("/signin");
                     return;
                 }

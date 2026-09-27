@@ -39,15 +39,6 @@ export function Signin() {
                 password: formData.password
             });
 
-            console.log(response.data);
-
-            // Store JWT
-            localStorage.setItem("token", response.data.token);
-
-            const profileResponse = await api.get("/profile");
-
-            console.log(profileResponse.data);
-
             navigate("/");
 
         } catch (err) {

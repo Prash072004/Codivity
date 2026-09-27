@@ -19,13 +19,6 @@ export function Profile() {
 
     useEffect(() => {
         const fetchProfile = async () => {
-            const token = localStorage.getItem("token");
-
-            if (!token) {
-                navigate("/signin");
-                return;
-            }
-
             try {
                 const response = await api.get("/profile");
                 
@@ -33,9 +26,8 @@ export function Profile() {
             } catch (err) {
                 console.error("Profile error: ", err);
 
-                // Handle expired/invalid JWT
+                // Handle expired/invalid/missing JWT
                 if (err.response?.status === 401) {
-                    localStorage.removeItem("token");
                     navigate("/signin");
                     return;
                 }

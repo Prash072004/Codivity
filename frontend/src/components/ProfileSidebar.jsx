@@ -1,12 +1,18 @@
 import { NavLink, useNavigate } from "react-router";
 import { User, FileCheckCorner, Trophy, Sheet, Settings, LogOut } from "lucide-react";
+import api from "../services/api";
 
 export function ProfileSidebar() {
     const navigate = useNavigate();
 
-    const handleSignOut = () => {
-        localStorage.removeItem("token");
-        navigate("/signin");
+    const handleSignOut = async () => {
+        try {
+            await api.post("/auth/logout");
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            navigate("/signin");
+        }
     };
 
     const items = [

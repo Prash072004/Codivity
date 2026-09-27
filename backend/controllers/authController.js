@@ -34,13 +34,24 @@ async function signup(req, res) {
     }
 }
 
+const JWT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7d, matches JWT expiresIn
+
+function getCookieOptions() {
+    return {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: JWT_MAX_AGE_MS
+    };
+}
+
 // Sign In
 async function signin(req, res) {
     try {
         const { username, email, password } = req.body;
 
         if((!username && !email) || !password) {
-            return re.status(400).json({ message: "Please provide username/email and password" });
+            return res.status(400).json({ message: "Please provide username/email and password" });
         }
 
         const user = await User.findOne({ $or: [ { username: username }, { email: email } ] });
@@ -57,9 +68,10 @@ async function signin(req, res) {
 
         const token = jwt.sign({ userId: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
+        res.cookie("token", token, getCookieOptions());
+
         return res.status(200).json({
-            message: "Sign in successful",
-            token 
+            message: "Sign in successful"
         });
     } catch (error) {
         console.error("Signin error:", error);
@@ -70,7 +82,19 @@ async function signin(req, res) {
     }
 }
 
+// Log Out
+function logout(req, res) {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax"
+    });
+
+    return res.status(200).json({ message: "Logged out successfully" });
+}
+
 module.exports = {
     signup,
-    signin
+    signin,
+    logout
 };

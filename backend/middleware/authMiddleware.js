@@ -2,15 +2,22 @@ const jwt = require("jsonwebtoken");
 
 function authMiddleware(req, res, next) {
     try {
-        const authHeader = req.headers.authorization;
+        let token = req.cookies?.token;
 
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        // Fallback for existing Authorization: Bearer clients
+        if (!token) {
+            const authHeader = req.headers.authorization;
+
+            if (authHeader && authHeader.startsWith("Bearer ")) {
+                token = authHeader.split(" ")[1];
+            }
+        }
+
+        if (!token) {
             return res.status(401).json({
                 message: "Authentication required"
             });
         }
-
-        const token = authHeader.split(" ")[1];
 
         const decoded = jwt.verify(
             token,
