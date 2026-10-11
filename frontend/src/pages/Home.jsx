@@ -1,5 +1,6 @@
 import { Navbar } from "../components/Navbar";
 import { FeatureCard } from "../components/FeatureCard";
+import { GamesSection } from "../components/GamesSection";
 import { FileCode, Trophy, ChartColumn, Library } from "lucide-react";
 
 export function Home() {
@@ -13,7 +14,7 @@ export function Home() {
             </div>
 
             <div className="mt-3 grid items-center gap-5 md:grid-cols-[1.4fr_1fr] md:gap-10">
-                <h2 className="m-0 text-[1.75rem] font-bold leading-tight tracking-tight text-white sm:text-4xl md:text-[2.5rem] lg:text-[3rem]">
+                <h2 className="m-0 text-[1.625rem] font-bold leading-tight tracking-tight text-white sm:text-3xl md:text-[2.125rem] lg:text-[2.25rem]">
                     Everything you need to
                     <span className="block text-slate-400">grow as a problem solver.</span>
                 </h2>
@@ -53,5 +54,7 @@ export function Home() {
                 />
             </div>
         </section>
+
+        <GamesSection />
     </div>
 }
