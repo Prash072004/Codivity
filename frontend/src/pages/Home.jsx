@@ -1,6 +1,7 @@
 import { Navbar } from "../components/Navbar";
 import { FeatureCard } from "../components/FeatureCard";
 import { GamesSection } from "../components/GamesSection";
+import { Footer } from "../components/Footer";
 import { FileCode, Trophy, ChartColumn, Library } from "lucide-react";
 
 export function Home() {
@@ -56,5 +57,7 @@ export function Home() {
         </section>
 
         <GamesSection />
+
+        <Footer />
     </div>
 }

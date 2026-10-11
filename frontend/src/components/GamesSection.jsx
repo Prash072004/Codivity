@@ -111,7 +111,7 @@ function GameCard({ game }) {
 
 export function GamesSection() {
     return (
-        <section className="w-full px-4 pt-8 pb-10 font-sans md:px-6 xl:px-8">
+        <section id="take-a-break" className="w-full px-4 pt-8 pb-10 font-sans md:px-6 xl:px-8">
             <div className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
                 <span className="h-px w-8 bg-sky-400" aria-hidden="true" />
                 Take a break
