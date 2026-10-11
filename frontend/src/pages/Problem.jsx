@@ -51,7 +51,7 @@ export function Problem() {
 
     if (loading) {
         return <div>
-            <Navbar />
+            <div className="px-3 pt-3"><Navbar /></div>
             
             <div style={{ padding: "30px" }}>
                 Loading problem...
@@ -62,7 +62,7 @@ export function Problem() {
     if (error) {
         return (
             <>
-                <Navbar />
+                <div className="px-3 pt-3"><Navbar /></div>
                 <div style={{ padding: "30px" }}>
                     {error}
                 </div>
@@ -72,9 +72,9 @@ export function Problem() {
 
     return <div style={{color: "white"}}>
         
-        <Navbar />
+        <div className="px-3 pt-3"><Navbar /></div>
         
-        <main style={{ display: "flex", gap: "10px", height: "calc(100vh - 100px)", padding: "10px", boxSizing: "border-box" }}>
+        <main style={{ display: "flex", gap: "10px", height: "calc(100vh - 116px)", padding: "10px", boxSizing: "border-box" }}>
     
             {/* Problem Statement */}
             <div style={{ flex: 1, minWidth: 0, border: "1px solid white", borderRadius: "6px", overflow: "hidden" }}>

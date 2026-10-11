@@ -46,7 +46,7 @@ export function ProblemSet() {
     if (loading) {
         return (
             <>
-                <Navbar />
+                <div className="px-3 pt-3"><Navbar /></div>
                 <div style={{ padding: "30px", color: "white" }}>
                     Loading problems...
                 </div>
@@ -57,7 +57,7 @@ export function ProblemSet() {
     if (error) {
         return (
             <>
-                <Navbar />
+                <div className="px-3 pt-3"><Navbar /></div>
                 <div style={{ padding: "30px", color: "white" }}>
                     {error}
                 </div>
@@ -87,7 +87,7 @@ export function ProblemSet() {
 
         return (
             <div style={{ minHeight: "100vh", backgroundColor: "black" }}>
-                <Navbar />
+                <div className="px-3 pt-3"><Navbar /></div>
                 <main style={{ maxWidth: "920px", margin: "34px auto", padding: "0 24px 40px", color: "white", boxSizing: "border-box" }}>
                     <h1 style={{ fontSize: "28px", fontWeight: "600", margin: "0 0 24px" }}>Problem Set</h1>
                     {groupedProblems.length === 0 ? (
@@ -132,7 +132,7 @@ export function ProblemSet() {
 
     return (
         <div>
-            <Navbar />
+            <div className="px-3 pt-3"><Navbar /></div>
 
             <main
                 style={{
