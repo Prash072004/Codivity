@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
+import { useParams } from "react-router";
 import api from "../services/api";
 import { Navbar } from "../components/Navbar";
-import { CheckCircle2, Circle } from "lucide-react";
+import { TopicSidebar } from "../components/TopicSidebar";
+import { ProblemTable, ProgressSummary } from "../components/ProblemList";
 
 export function ProblemSet() {
     const { slug } = useParams();
@@ -12,6 +13,12 @@ export function ProblemSet() {
     const [userProgress, setUserProgress] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [selectedTopic, setSelectedTopic] = useState("all");
+    const [search, setSearch] = useState("");
+    const [difficultyFilter, setDifficultyFilter] = useState("all");
+    const [statusFilter, setStatusFilter] = useState("all");
+    const [sortBy, setSortBy] = useState("title");
+    const [progressLoaded, setProgressLoaded] = useState(false);
 
     useEffect(() => {
         const fetchProblem = async () => {
@@ -26,6 +33,7 @@ export function ProblemSet() {
                     try {
                         const progressResponse = await api.get("/user-problems");
                         setUserProgress(progressResponse.data.progress || []);
+                        setProgressLoaded(true);
                     } catch {
                         // Unauthenticated users have no progress to show
                     }
@@ -72,64 +80,95 @@ export function ProblemSet() {
                 item.status
             ])
         );
-        const groupedProblems = problems.reduce((groups, item) => {
-            const topicName = item.primaryTopic?.name || "Uncategorized";
-            const group = groups.find((entry) => entry.name === topicName);
+        const DIFFICULTY_ORDER = { Easy: 0, Medium: 1, Hard: 2 };
+        const allRows = problems.map((item) => ({
+            ...item,
+            topicName: item.primaryTopic?.name || "Uncategorized",
+            status: progressByProblem.get(item._id) || "Unattempted"
+        }));
 
-            if (group) {
-                group.problems.push(item);
-            } else {
-                groups.push({ name: topicName, problems: [item] });
-            }
+        const topicCounts = allRows.reduce((counts, row) => counts.set(row.topicName, (counts.get(row.topicName) || 0) + 1), new Map());
+        const topicOptions = [
+            { key: "all", name: "All", count: allRows.length },
+            ...[...topicCounts.keys()].sort((a, b) => a.localeCompare(b)).map((name) => ({ key: name, name, count: topicCounts.get(name) }))
+        ];
+        const activeTopic = topicOptions.some((option) => option.key === selectedTopic) ? selectedTopic : "all";
 
-            return groups;
-        }, []).sort((first, second) => first.name.localeCompare(second.name));
+        const query = search.trim().toLowerCase();
+        const rows = allRows
+            .filter((row) => activeTopic === "all" || row.topicName === activeTopic)
+            .filter((row) => difficultyFilter === "all" || row.difficulty === difficultyFilter)
+            .filter((row) => statusFilter === "all" || row.status === statusFilter)
+            .filter((row) => !query || row.title.toLowerCase().includes(query) || row.topicName.toLowerCase().includes(query))
+            .sort((a, b) => {
+                if (sortBy === "difficulty-asc") return DIFFICULTY_ORDER[a.difficulty] - DIFFICULTY_ORDER[b.difficulty] || a.title.localeCompare(b.title);
+                if (sortBy === "difficulty-desc") return DIFFICULTY_ORDER[b.difficulty] - DIFFICULTY_ORDER[a.difficulty] || a.title.localeCompare(b.title);
+                return a.title.localeCompare(b.title);
+            });
+
+        const solvedCount = allRows.filter((row) => row.status === "Solved").length;
+        const controlClass = "h-9 rounded-lg border border-slate-400/15 bg-white/[0.03] px-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-400/60";
 
         return (
-            <div style={{ minHeight: "100vh", backgroundColor: "black" }}>
+            <div className="min-h-screen bg-[#05070d] font-sans text-white">
                 <div className="px-3 pt-3"><Navbar /></div>
-                <main style={{ maxWidth: "920px", margin: "34px auto", padding: "0 24px 40px", color: "white", boxSizing: "border-box" }}>
-                    <h1 style={{ fontSize: "28px", fontWeight: "600", margin: "0 0 24px" }}>Problem Set</h1>
-                    {groupedProblems.length === 0 ? (
-                        <p>No problems available.</p>
-                    ) : groupedProblems.map((group) => (
-                        <section key={group.name} style={{ marginTop: "16px", border: "1px solid white", padding: "18px 20px", boxSizing: "border-box" }}>
-                            <h2 style={{ fontSize: "19px", fontWeight: "500", margin: "0 0 18px" }}>{group.name}</h2>
-                            <div style={{ display: "flex", paddingBottom: "9px", color: "#aaa", fontSize: "13px", borderBottom: "1px solid white" }}>
-                                <div style={{ flex: 1 }}>Problem</div>
-                                <div style={{ width: "130px" }}>Difficulty</div>
-                                <div style={{ width: "56px", textAlign: "right" }}>Status</div>
-                            </div>
-                            {group.problems
-                                .sort((first, second) => first.title.localeCompare(second.title))
-                                .map((item) => {
-                                    const status = progressByProblem.get(item._id);
+                <div className="w-full px-4 py-6 md:px-6 xl:px-8">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <h1 className="m-0 text-2xl font-semibold">Problem Set</h1>
+                            <p className="m-0 mt-1 text-sm text-slate-400">Find the right problem. Build consistency.</p>
+                        </div>
+                        <ProgressSummary solved={solvedCount} total={allRows.length} signedIn={progressLoaded} />
+                    </div>
 
-                                    return (
-                                        <div key={item._id} style={{ display: "flex", alignItems: "center", minHeight: "46px", padding: "8px 0", borderBottom: "1px solid #333", boxSizing: "border-box" }}>
-                                            <div style={{ flex: 1, minWidth: 0, fontSize: "15px" }}>
-                                                <Link style={{ color: "white" }} to={`/problem/${item.slug}`}>
-                                                    {item.title}
-                                                </Link>
-                                            </div>
-                                            <div style={{ width: "130px", fontSize: "14px", color: item.difficulty === "Easy" ? "#6fce82" : item.difficulty === "Medium" ? "#e6c85c" : "#e87878" }}>
-                                                {item.difficulty}
-                                            </div>
-                                            <div style={{ width: "56px", display: "flex", justifyContent: "flex-end" }} title={status || "Unattempted"}>
-                                                {status === "Solved"
-                                                    ? <CheckCircle2 size={20} strokeWidth={1.5} />
-                                                    : <Circle size={20} strokeWidth={1.5} />}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                    <div className="mt-6 grid items-start gap-6 md:grid-cols-[15rem_minmax(0,1fr)]">
+                        <TopicSidebar topics={topicOptions} selected={activeTopic} onSelect={setSelectedTopic} />
+
+                        <section className="min-w-0">
+                            <div className="mb-3 flex flex-wrap gap-2">
+                                <input
+                                    type="search"
+                                    value={search}
+                                    onChange={(event) => setSearch(event.target.value)}
+                                    placeholder="Search by title or topic"
+                                    aria-label="Search problems"
+                                    className={`${controlClass} min-w-48 flex-1 placeholder:text-slate-500`}
+                                />
+                                <select aria-label="Topic" value={activeTopic} onChange={(event) => setSelectedTopic(event.target.value)} className={controlClass}>
+                                    {topicOptions.map((option) => (
+                                        <option key={option.key} value={option.key} className="bg-slate-900">{option.key === "all" ? "All topics" : option.name}</option>
+                                    ))}
+                                </select>
+                                <select aria-label="Difficulty" value={difficultyFilter} onChange={(event) => setDifficultyFilter(event.target.value)} className={controlClass}>
+                                    <option value="all" className="bg-slate-900">All difficulties</option>
+                                    <option value="Easy" className="bg-slate-900">Easy</option>
+                                    <option value="Medium" className="bg-slate-900">Medium</option>
+                                    <option value="Hard" className="bg-slate-900">Hard</option>
+                                </select>
+                                <select aria-label="Status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className={controlClass}>
+                                    <option value="all" className="bg-slate-900">All statuses</option>
+                                    <option value="Solved" className="bg-slate-900">Solved</option>
+                                    <option value="Attempted" className="bg-slate-900">Attempted</option>
+                                    <option value="Unattempted" className="bg-slate-900">Unattempted</option>
+                                </select>
+                                <select aria-label="Sort" value={sortBy} onChange={(event) => setSortBy(event.target.value)} className={controlClass}>
+                                    <option value="title" className="bg-slate-900">Title A–Z</option>
+                                    <option value="difficulty-asc" className="bg-slate-900">Easiest first</option>
+                                    <option value="difficulty-desc" className="bg-slate-900">Hardest first</option>
+                                </select>
+                            </div>
+
+                            {allRows.length === 0 ? (
+                                <p className="text-sm text-slate-400">No problems available.</p>
+                            ) : (
+                                <ProblemTable rows={rows} />
+                            )}
                         </section>
-                    ))}
-                </main>
+                    </div>
+                </div>
             </div>
         );
     }
-
     return (
         <div>
             <div className="px-3 pt-3"><Navbar /></div>
