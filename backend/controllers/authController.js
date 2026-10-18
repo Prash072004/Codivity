@@ -36,11 +36,20 @@ async function signup(req, res) {
 
 const JWT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7d, matches JWT expiresIn
 
-function getCookieOptions() {
+// Cross-site (codivity.app -> onrender.com) requires SameSite=None; Secure in production
+function getBaseCookieOptions() {
+    const isProduction = process.env.NODE_ENV === "production";
+
     return {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax"
+    };
+}
+
+function getCookieOptions() {
+    return {
+        ...getBaseCookieOptions(),
         maxAge: JWT_MAX_AGE_MS
     };
 }
@@ -84,11 +93,7 @@ async function signin(req, res) {
 
 // Log Out
 function logout(req, res) {
-    res.clearCookie("token", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax"
-    });
+    res.clearCookie("token", getBaseCookieOptions());
 
     return res.status(200).json({ message: "Logged out successfully" });
 }
